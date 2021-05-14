@@ -11,17 +11,19 @@
 class GSIServer
 {
 	httplib::Server server;
-	std::queue<std::string> data;
+	std::queue<std::string> dataQueue;
 
-	std::thread t;
-	std::mutex m;
+	std::thread listeningThread;
+	std::mutex dataQueueMutex;
 	std::condition_variable cv;
+
+	void receiveData(const std::string& body);
 
 public:
 	GSIServer(const std::string& host, int port);
 	virtual ~GSIServer();
 
-	std::string getNextData();
+	std::string getNextDataOrWait();
 };
 
 
