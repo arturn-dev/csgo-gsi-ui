@@ -3,6 +3,8 @@
   <component name="CMakeWorkspace" PROJECT_DIR="$PROJECT_DIR$" />
   <component name="CidrRootsConfiguration">
     <libraryRoots>
+      <file path="$PROJECT_DIR$/googletest/googletest" />
+      <file path="$PROJECT_DIR$/googletests/googletest" />
       <file path="$PROJECT_DIR$/thirdparty/glad" />
       <file path="$PROJECT_DIR$/thirdparty/glfw" />
       <file path="$PROJECT_DIR$/thirdparty/httplib" />
