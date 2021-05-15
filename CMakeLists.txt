@@ -18,7 +18,7 @@ FetchContent_MakeAvailable(googletest)
 
 enable_testing()
 
-add_executable(hello_test test/test.cpp test/GSIServerTest.cpp src/GSIServer.cpp)
+add_executable(hello_test test/GSIServerTest.cpp src/GSIServer.cpp)
 target_link_libraries(hello_test gtest_main)
 target_include_directories(hello_test PUBLIC "${HTTPLIB_INCLUDE_DIR}")
 include(GoogleTest)
