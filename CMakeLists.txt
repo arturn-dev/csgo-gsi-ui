@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.17)
 project(csgo_gsi_ui)
 
+set(CMAKE_CXX_STANDARD 17)
+
 set(THIRDPARTY_DIR "${CMAKE_CURRENT_SOURCE_DIR}/thirdparty")
 
 include(thirdparty/thirdparty.cmake)
