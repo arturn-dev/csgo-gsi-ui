@@ -1,36 +1,38 @@
 #include "DataProvider.h"
 
-#include <utility>
-
-void DataProvider::subscribe(IDataProviderListener* listener)
+DataProvider::DataProvider() : _gsiServer("127.0.0.1", 3000), isBeingDestroyed(false)
 {
-	listeners.push_back(listener);
+	dataFetchThread = std::thread([&]
+								  {
+									  while(!isBeingDestroyed)
+									  {
+										  auto data = _gsiServer.getNextDataOrWait();
+										  notify(nlohmann::json::parse(data), DATA_RAW);
+									  }
+								  });
+}
+
+DataProvider::~DataProvider()
+{
+	_gsiServer.stop();
+	isBeingDestroyed = true;
+	dataFetchThread.join();
+}
+
+void DataProvider::subscribe(IDataProviderListener* listener, DataType dataType)
+{
+	listeners.emplace(dataType, listener);
 }
 
 void DataProvider::unsubscribe(IDataProviderListener* listener)
 {
-	listeners.remove(listener);
+	// TODO: implement
 }
 
-void DataProvider::notify()
+void DataProvider::notify(const nlohmann::json& data, DataType dataType)
 {
-	if (lastUpdatedDataTypes == NONE)
-		return;
-
-	for (int i = 0; i < DataType::COUNT; ++i)
-	{
-		auto dataType = static_cast<DataType>(lastUpdatedDataTypes & (1 << i));
-		if (dataType != NONE)
-			for (auto&& listener : listeners)
-			{
-				listener->update(lastData[dataType], dataType);
-			}
-	}
-
-	lastUpdatedDataTypes = NONE;
-}
-
-void DataProvider::updateData(DataType dataType, nlohmann::json data)
-{
-	lastData[dataType] = std::move(data);
+	auto bucketIndex = listeners.bucket(dataType);
+	std::for_each(listeners.begin(bucketIndex), listeners.end(bucketIndex),
+				  [&](IDataProviderListener*& listener)
+				  { listener->update(data, dataType); });
 }

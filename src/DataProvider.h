@@ -6,28 +6,34 @@
 #include <json.hpp>
 
 #include "DataType.h"
+#include "GSIServer.h"
 
 class IDataProviderListener;
 
 class DataProvider
 {
 private:
-	std::list<IDataProviderListener*> listeners;
-	std::unordered_map<DataType, nlohmann::json> lastData;
-	int lastUpdatedDataTypes = DataType::NONE;
+	std::unordered_multimap<DataType, IDataProviderListener*> listeners;
+	std::thread dataFetchThread;
+	GSIServer _gsiServer;
 
-	void notify();
+	std::atomic_bool isBeingDestroyed;
 
 public:
-	void subscribe(IDataProviderListener* listener);
+	DataProvider();
+	virtual ~DataProvider();
+
+	void subscribe(IDataProviderListener* listener, DataType dataType);
 	void unsubscribe(IDataProviderListener* listener);
-	void updateData(DataType dataType, nlohmann::json data);
+
+private:
+	void notify(const nlohmann::json& data, DataType dataType);
 };
 
 class IDataProviderListener
 {
 public:
-	virtual void update(DataType dataType, nlohmann::json data) = 0;
+	virtual void update(const nlohmann::json& data, DataType dataType) = 0;
 };
 
 #endif //DATAPROVIDER_H

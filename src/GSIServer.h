@@ -17,13 +17,18 @@ class GSIServer
 	std::mutex dataQueueMutex;
 	std::condition_variable cv;
 
-	void receiveData(const std::string& body);
+	std::atomic_bool isStopping = false;
 
 public:
 	GSIServer(const std::string& host, int port);
 	virtual ~GSIServer();
 
 	std::string getNextDataOrWait();
+	void stop();
+
+private:
+
+	void receiveData(const std::string& body);
 };
 
 

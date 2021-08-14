@@ -2,15 +2,25 @@
 
 GSIServer::GSIServer(const std::string& host, int port)
 {
-	server.Post("/", [this](const httplib::Request& req, httplib::Response& res) {
+	server.Post("/", [this](const httplib::Request& req, httplib::Response& res)
+	{
 		receiveData(req.body);
 		res.set_content("{}", "application/json");
 		res.status = 200;
 	});
 
-	listeningThread = std::thread([=]{
-		server.listen(host.c_str(), port);
-	});
+	listeningThread = std::thread([=]
+								  {
+									  server.listen(host.c_str(), port);
+								  });
+
+	while (!server.is_running())
+		;
+}
+
+GSIServer::~GSIServer()
+{
+	stop();
 }
 
 void GSIServer::receiveData(const std::string& body)
@@ -28,6 +38,9 @@ void GSIServer::receiveData(const std::string& body)
 
 std::string GSIServer::getNextDataOrWait()
 {
+	if (isStopping)
+		return "";
+
 	std::string ret;
 
 	std::unique_lock<std::mutex> lock(dataQueueMutex);
@@ -35,14 +48,20 @@ std::string GSIServer::getNextDataOrWait()
 		// No data available. Block thread while waiting for new data.
 		cv.wait(lock);
 
-	ret = dataQueue.front();
-	dataQueue.pop();
+	if (!dataQueue.empty())
+	{
+		ret = dataQueue.front();
+		dataQueue.pop();
+	}
 
 	return ret;
 }
 
-GSIServer::~GSIServer()
+void GSIServer::stop()
 {
-	server.stop();
+	isStopping = true;
+	cv.notify_all();
+	if (server.is_running())
+		server.stop();
 	listeningThread.join();
 }
