@@ -4,7 +4,7 @@ DataProvider::DataProvider() : _gsiServer("127.0.0.1", 3000), isBeingDestroyed(f
 {
 	dataFetchThread = std::thread([&]
 								  {
-									  while(!isBeingDestroyed)
+									  while (!isBeingDestroyed)
 									  {
 										  auto data = _gsiServer.getNextDataOrWait();
 										  notify(nlohmann::json::parse(data), DATA_RAW);
@@ -26,13 +26,20 @@ void DataProvider::subscribe(IDataProviderListener* listener, DataType dataType)
 
 void DataProvider::unsubscribe(IDataProviderListener* listener)
 {
-	// TODO: implement
+	auto predicate = [listener](const std::pair<DataType, IDataProviderListener*>& entry)
+	{ return entry.second == listener; };
+	auto foundEntryIt = std::find_if(listeners.begin(), listeners.end(), predicate);
+	while (foundEntryIt != listeners.end())
+	{
+		listeners.erase(foundEntryIt);
+		foundEntryIt = std::find_if(std::next(foundEntryIt), listeners.end(), predicate);
+	}
 }
 
 void DataProvider::notify(const nlohmann::json& data, DataType dataType)
 {
 	auto bucketIndex = listeners.bucket(dataType);
 	std::for_each(listeners.begin(bucketIndex), listeners.end(bucketIndex),
-				  [&](IDataProviderListener*& listener)
-				  { listener->update(data, dataType); });
+				  [&](auto& listener)
+				  { listener.second->update(data, dataType); });
 }
