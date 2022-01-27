@@ -8,6 +8,9 @@
 #include <mutex>
 #include <condition_variable>
 
+#include <plog/Appenders/ColorConsoleAppender.h>
+#include <plog/Formatters/TxtFormatter.h>
+
 class GSIServer
 {
 	httplib::Server server;
@@ -21,9 +24,11 @@ class GSIServer
 
 public:
 	GSIServer(const std::string& host, int port);
+
 	virtual ~GSIServer();
 
 	std::string getNextDataOrWait();
+
 	void stop();
 
 private:
@@ -31,5 +36,6 @@ private:
 	void receiveData(const std::string& body);
 };
 
+static plog::ColorConsoleAppender<plog::TxtFormatter> consoleAdapter;
 
 #endif //GSISERVER_H

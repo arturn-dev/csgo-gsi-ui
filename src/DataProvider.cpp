@@ -1,6 +1,6 @@
 #include "DataProvider.h"
 
-DataProvider::DataProvider() : _gsiServer("127.0.0.1", 3000), isBeingDestroyed(false)
+DataProvider::DataProvider(const std::string& host, int port) : _gsiServer(host, port), isBeingDestroyed(false)
 {
 	dataFetchThread = std::thread([&]
 								  {

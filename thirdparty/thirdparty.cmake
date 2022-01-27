@@ -6,7 +6,7 @@ set(OPENGL_LIBRARY ${OPENGL_LIBRARIES})
 find_library(GLFW_LIBRARY "glfw" "/usr/lib" "/usr/local/lib")
 find_path(GLFW_INCLUDE_DIR "glfw/glfw.h" "/usr/include" "/usr/local/include")
 
-if((NOT GLFW_LIBRARY) OR (NOT GLFW_INCLUDE_DIR))
+if ((NOT GLFW_LIBRARY) OR (NOT GLFW_INCLUDE_DIR))
     set(GLFW_DIR "${THIRDPARTY_DIR}/glfw")
 
     message("Unable to find glfw, cloning...")
@@ -14,15 +14,15 @@ if((NOT GLFW_LIBRARY) OR (NOT GLFW_INCLUDE_DIR))
             WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
 
     set(GLFW_BUILD_EXAMPLES OFF CACHE INTERNAL "Build the GLFW example programs")
-    set(GLFW_BUILD_TESTS    OFF CACHE INTERNAL "Build the GLFW test programs")
-    set(GLFW_BUILD_DOCS     OFF CACHE INTERNAL "Build the GLFW documentation")
-    set(GLFW_INSTALL        OFF CACHE INTERNAL "Generate installation target")
+    set(GLFW_BUILD_TESTS OFF CACHE INTERNAL "Build the GLFW test programs")
+    set(GLFW_BUILD_DOCS OFF CACHE INTERNAL "Build the GLFW documentation")
+    set(GLFW_INSTALL OFF CACHE INTERNAL "Generate installation target")
 
     add_subdirectory("${GLFW_DIR}")
 
     set(GLFW_LIBRARY "glfw" "${GLFW_LIBRARIES}")
     set(GLFW_INCLUDE_DIR "${GLFW_DIR}/include")
-endif()
+endif ()
 
 # glad
 set(GLAD_DIR "${THIRDPARTY_DIR}/glad")
@@ -49,3 +49,4 @@ set(IMGUI_INCLUDE_DIR "${IMGUI_DIR}")
 # httplib, nlohmann::json
 set(HTTPLIB_INCLUDE_DIR "${THIRDPARTY_DIR}/httplib")
 set(NLOHMANN_INCLUDE_DIR "${THIRDPARTY_DIR}/nlohmann")
+set(PLOG_INCLUDE_DIR "${THIRDPARTY_DIR}/plog/include")

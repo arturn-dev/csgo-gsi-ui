@@ -1,12 +1,22 @@
-#ifndef GSISERVERTESTFIXTURE_H
-#define GSISERVERTESTFIXTURE_H
+#ifndef GSICLIENTFIXTURE_H
+#define GSICLIENTFIXTURE_H
 
-class GSIServerTestFixture : public ::testing::Test
+#include <memory>
+#include <fstream>
+#include <string>
+#include <filesystem>
+
+#include <httplib.h>
+
+#include "gtest/gtest.h"
+#include "../../src/GSIServer.h"
+
+class GSIClientFixture : public ::testing::Test
 {
 protected:
 	void SetUp() override
 	{
-		for (const auto& entry : std::filesystem::directory_iterator(dirPath))
+		for (const auto& entry: std::filesystem::directory_iterator(dirPath))
 		{
 			const std::string filename = entry.path().string();
 			std::ifstream ifs(filename);
@@ -23,7 +33,6 @@ protected:
 		bodySamplesIt = bodySamples.begin();
 
 		client = std::make_unique<httplib::Client>(address, port);
-		server = std::make_unique<GSIServer>(address, port);
 	}
 
 	void TearDown() override
@@ -49,15 +58,14 @@ protected:
 	}
 
 	std::unique_ptr<httplib::Client> client;
-	std::unique_ptr<GSIServer> server;
 	std::vector<std::string> bodySamples;
 	std::vector<std::string>::iterator bodySamplesIt;
 	bool firstSample = true;
 
 	const std::string dirPath = "../test/data/body_samples";
 	const std::string filenamePrefix = "sample";
-	const std::string address = "127.0.0.1";
-	const int port = 3001;
+	const std::string address = "0.0.0.0";
+	const int port = 3000;
 	const httplib::Headers headers = {
 			{"user-agent",      "Valve/Steam HTTP Client 1.0 (730)"},
 			{"accept",          "text/html*/*;q=0.9"},
@@ -67,4 +75,4 @@ protected:
 
 };
 
-#endif //GSISERVERTESTFIXTURE_H
+#endif //GSICLIENTFIXTURE_H

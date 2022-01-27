@@ -20,10 +20,12 @@ private:
 	std::atomic_bool isBeingDestroyed;
 
 public:
-	DataProvider();
+	DataProvider(const std::string& host, int port);
+
 	virtual ~DataProvider();
 
 	void subscribe(IDataProviderListener* listener, DataType dataType);
+
 	void unsubscribe(IDataProviderListener* listener);
 
 private:
