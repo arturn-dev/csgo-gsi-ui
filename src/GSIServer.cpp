@@ -14,11 +14,7 @@ GSIServer::GSIServer(const std::string& host, int port)
 	});
 
 	listeningThread = std::thread([=]
-								  {
-									  bool success = server.listen(host.c_str(), port);
-									  if (!success)
-										  LOG(plog::error) << "Could not start GSI server";
-								  });
+								  { server.listen(host.c_str(), port); });
 
 	const int SERVER_START_TIMEOUT_SECS = 3;
 	LOG(plog::info) << ("Waiting " + std::to_string(SERVER_START_TIMEOUT_SECS) + " seconds for server start...");
@@ -27,20 +23,15 @@ GSIServer::GSIServer(const std::string& host, int port)
 	while (!server.is_running())
 	{
 		using namespace std::chrono_literals;
+		using namespace std::chrono;
+
 		std::this_thread::sleep_for(100ms);
 
-		if (listeningThread.joinable())
-		{
-			listeningThread.join();
-			break;
-		}
-
-		if (std::chrono::duration_cast<std::chrono::seconds>(
-				std::chrono::high_resolution_clock::now() - startTime).count() > SERVER_START_TIMEOUT_SECS &&
+		if (duration_cast<seconds>(
+				high_resolution_clock::now() - startTime).count() > SERVER_START_TIMEOUT_SECS &&
 			!server.is_running())
 		{
-			LOG(plog::error) << "Server initialization timed out. Unable to start the GSI server.";
-			break;
+			throw std::logic_error("Could not start the GSI server. Timeout.");
 		}
 	}
 
@@ -50,7 +41,8 @@ GSIServer::GSIServer(const std::string& host, int port)
 
 GSIServer::~GSIServer()
 {
-	stop();
+	if (!isStopping)
+		stop();
 }
 
 void GSIServer::receiveData(const std::string& body)

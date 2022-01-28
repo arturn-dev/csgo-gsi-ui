@@ -7,7 +7,8 @@ DataProvider::DataProvider(const std::string& host, int port) : _gsiServer(host,
 									  while (!isBeingDestroyed)
 									  {
 										  auto data = _gsiServer.getNextDataOrWait();
-										  notify(nlohmann::json::parse(data), DATA_RAW);
+										  if (!data.empty())
+											  notify(nlohmann::json::parse(data), DATA_RAW);
 									  }
 								  });
 }

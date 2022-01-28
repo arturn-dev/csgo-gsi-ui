@@ -64,8 +64,8 @@ protected:
 
 	const std::string dirPath = "../test/data/body_samples";
 	const std::string filenamePrefix = "sample";
-	const std::string address = "0.0.0.0";
-	const int port = 3000;
+	const std::string address = "127.0.0.1";
+	const int port = 3001;
 	const httplib::Headers headers = {
 			{"user-agent",      "Valve/Steam HTTP Client 1.0 (730)"},
 			{"accept",          "text/html*/*;q=0.9"},

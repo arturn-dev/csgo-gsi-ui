@@ -19,20 +19,41 @@ protected:
 
 TEST_F(DataProviderTestListenerFixture, ShouldReceiveAllData)
 {
-	class DataProviderListener : public IDataProviderListener
+	struct DataProviderListener : public IDataProviderListener
 	{
-	public:
 		nlohmann::json data;
+		std::atomic_bool updateInvoked = false;
+		std::condition_variable cv;
+		std::mutex m;
 
 		void update(const nlohmann::json& data, DataType dataType) override
 		{
+			updateInvoked = false;
 			this->data = data;
+			updateInvoked = true;
+			cv.notify_all();
+		}
+
+		void waitForUpdate()
+		{
+			if (updateInvoked)
+			{
+				updateInvoked = false;
+				return;
+			}
+
+			std::unique_lock<std::mutex> lock(m);
+			cv.wait(lock);
+
+			updateInvoked = false;
 		}
 	} dataProviderListener;
 
 	dataProvider.subscribe(&dataProviderListener, DATA_RAW);
 
 	sendNextPostRequest();
+	dataProviderListener.waitForUpdate();
 
-	ASSERT_EQ(dataProviderListener.data, bodySamples[0]);
+	auto originalData = nlohmann::json::parse(bodySamples[0]);
+	ASSERT_EQ(dataProviderListener.data, originalData);
 }
