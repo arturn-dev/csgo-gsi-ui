@@ -22,18 +22,21 @@ DataProvider::~DataProvider()
 
 void DataProvider::subscribe(IDataProviderListener* listener, DataType dataType)
 {
-	listeners.emplace(dataType, listener);
+	if (listener != nullptr)
+		listeners.emplace(dataType, listener);
 }
 
 void DataProvider::unsubscribe(IDataProviderListener* listener)
 {
+	if (listener == nullptr) return;
+	
 	auto predicate = [listener](const std::pair<DataType, IDataProviderListener*>& entry)
 	{ return entry.second == listener; };
 	auto foundEntryIt = std::find_if(listeners.begin(), listeners.end(), predicate);
 	while (foundEntryIt != listeners.end())
 	{
-		listeners.erase(foundEntryIt);
-		foundEntryIt = std::find_if(std::next(foundEntryIt), listeners.end(), predicate);
+		auto nextIt = listeners.erase(foundEntryIt);
+		foundEntryIt = std::find_if(nextIt, listeners.end(), predicate);
 	}
 }
 

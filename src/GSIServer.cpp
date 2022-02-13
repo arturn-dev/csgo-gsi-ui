@@ -14,7 +14,10 @@ GSIServer::GSIServer(const std::string& host, int port)
 	});
 
 	listeningThread = std::thread([=]
-								  { server.listen(host.c_str(), port); });
+								  {
+									  server.listen(host.c_str(), port);
+									  LOG(plog::info) << "GSI server stopped.";
+								  });
 
 	const int SERVER_START_TIMEOUT_SECS = 3;
 	LOG(plog::info) << ("Waiting " + std::to_string(SERVER_START_TIMEOUT_SECS) + " seconds for server start...");
@@ -67,7 +70,7 @@ std::string GSIServer::getNextDataOrWait()
 
 	std::unique_lock<std::mutex> lock(dataQueueMutex);
 	if (dataQueue.empty())
-		// No data available. Block thread while waiting for new data.
+		// No data available. Block current thread while waiting for new data.
 		cv.wait(lock);
 
 	if (!dataQueue.empty())
@@ -82,6 +85,7 @@ std::string GSIServer::getNextDataOrWait()
 void GSIServer::stop()
 {
 	isStopping = true;
+	LOG(plog::info) << "Stopping GSI server...";
 	cv.notify_all();
 	if (server.is_running())
 		server.stop();
