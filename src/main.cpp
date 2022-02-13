@@ -25,7 +25,7 @@ int main()
 		{
 			case 1:
 			{
-				std::string data = server.getNextData();
+				std::string data = server.getNextDataOrWait();
 				if (data.empty())
 				{
 					cout << "No data available.\n";

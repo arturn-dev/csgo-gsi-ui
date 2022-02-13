@@ -1,0 +1,521 @@
+{
+	"provider": {
+		"name": "Counter-Strike: Global Offensive",
+		"appid": 730,
+		"version": 13791,
+		"steamid": "76561198084559301",
+		"timestamp": 1621029452
+	},
+	"player": {
+		"steamid": "76561198239747884",
+		"name": "pants low",
+		"observer_slot": 5,
+		"team": "T",
+		"activity": "playing",
+		"state": {
+			"health": 86,
+			"armor": 92,
+			"helmet": false,
+			"flashed": 0,
+			"smoked": 0,
+			"burning": 0,
+			"money": 750,
+			"round_kills": 1,
+			"round_killhs": 0,
+			"round_totaldmg": 101,
+			"equip_value": 850
+		},
+		"match_stats": {
+			"kills": 15,
+			"assists": 1,
+			"deaths": 12,
+			"mvps": 2,
+			"score": 34
+		},
+		"weapons": {
+			"weapon_0": {
+				"name": "weapon_knife_t",
+				"paintkit": "default",
+				"type": "Knife",
+				"state": "holstered"
+			},
+			"weapon_1": {
+				"name": "weapon_glock",
+				"paintkit": "aq_glock_coiled",
+				"type": "Pistol",
+				"ammo_clip": 16,
+				"ammo_clip_max": 20,
+				"ammo_reserve": 100,
+				"state": "active"
+			}
+		},
+		"spectarget": "76561198239747884",
+		"position": "-2220.34, 492.32, -167.97",
+		"forward": "-0.08, -1.00, -0.02"
+	},
+	"map": {
+		"mode": "competitive",
+		"name": "de_mirage",
+		"phase": "live",
+		"round": 15,
+		"team_ct": {
+			"score": 8,
+			"consecutive_round_losses": 1,
+			"timeouts_remaining": 0,
+			"matches_won_this_series": 0
+		},
+		"team_t": {
+			"score": 7,
+			"consecutive_round_losses": 1,
+			"timeouts_remaining": 1,
+			"matches_won_this_series": 0
+		},
+		"num_matches_to_win_series": 0,
+		"current_spectators": 25,
+		"souvenirs_total": 0,
+		"round_wins": {
+			"1": "ct_win_elimination",
+			"2": "ct_win_elimination",
+			"3": "t_win_bomb",
+			"4": "t_win_elimination",
+			"5": "t_win_elimination",
+			"6": "ct_win_elimination",
+			"7": "t_win_bomb",
+			"8": "t_win_bomb",
+			"9": "t_win_elimination",
+			"10": "ct_win_elimination",
+			"11": "ct_win_elimination",
+			"12": "t_win_bomb",
+			"13": "t_win_elimination",
+			"14": "ct_win_elimination",
+			"15": "ct_win_elimination"
+		}
+	},
+	"round": {
+		"phase": "live",
+		"bomb": "planted"
+	},
+	"grenades": {
+
+	},
+	"allplayers": {
+		"76561198195090814": {
+			"name": "Shalashaska",
+			"observer_slot": 6,
+			"team": "CT",
+			"match_stats": {
+				"kills": 12,
+				"assists": 4,
+				"deaths": 12,
+				"mvps": 2,
+				"score": 32
+			},
+			"position": "-2058.63, -494.67, -167.97",
+			"forward": "0.49, 0.87, -0.00",
+			"state": {
+				"health": 5,
+				"armor": 68,
+				"helmet": false,
+				"flashed": 0,
+				"burning": 0,
+				"money": 150,
+				"round_kills": 0,
+				"round_killhs": 0,
+				"round_totaldmg": 14,
+				"equip_value": 850
+			},
+			"weapons": {
+				"weapon_0": {
+					"name": "weapon_knife",
+					"paintkit": "default",
+					"type": "Knife",
+					"state": "holstered"
+				},
+				"weapon_1": {
+					"name": "weapon_usp_silencer",
+					"paintkit": "default",
+					"type": "Pistol",
+					"ammo_clip": 12,
+					"ammo_clip_max": 12,
+					"ammo_reserve": 9,
+					"state": "active"
+				}
+			}
+		},
+		"76561198296535518": {
+			"clan": "âAkatsuki â",
+			"name": "Naruto <3",
+			"observer_slot": 7,
+			"team": "CT",
+			"match_stats": {
+				"kills": 13,
+				"assists": 0,
+				"deaths": 10,
+				"mvps": 4,
+				"score": 41
+			},
+			"position": "-2299.41, -602.67, -167.97",
+			"forward": "0.04, 1.00, -0.00",
+			"state": {
+				"health": 100,
+				"armor": 0,
+				"helmet": false,
+				"flashed": 0,
+				"burning": 0,
+				"money": 0,
+				"round_kills": 0,
+				"round_killhs": 0,
+				"round_totaldmg": 0,
+				"equip_value": 1000
+			},
+			"weapons": {
+				"weapon_0": {
+					"name": "weapon_knife",
+					"paintkit": "default",
+					"type": "Knife",
+					"state": "holstered"
+				},
+				"weapon_1": {
+					"name": "weapon_usp_silencer",
+					"paintkit": "aq_usp_stainless",
+					"type": "Pistol",
+					"ammo_clip": 11,
+					"ammo_clip_max": 12,
+					"ammo_reserve": 24,
+					"state": "active"
+				}
+			}
+		},
+		"76561198000033238": {
+			"name": "âââQuE PaSo?!âââ",
+			"observer_slot": 1,
+			"team": "T",
+			"match_stats": {
+				"kills": 9,
+				"assists": 3,
+				"deaths": 14,
+				"mvps": 1,
+				"score": 21
+			},
+			"position": "-277.03, 480.92, -80.94",
+			"forward": "-0.90, -0.44, 0.00",
+			"state": {
+				"health": 0,
+				"armor": 0,
+				"helmet": false,
+				"flashed": 0,
+				"burning": 0,
+				"money": 100,
+				"round_kills": 0,
+				"round_killhs": 0,
+				"round_totaldmg": 30,
+				"equip_value": 900
+			},
+			"weapons": {
+
+			}
+		},
+		"76561198352968646": {
+			"name": "ðð",
+			"observer_slot": 8,
+			"team": "CT",
+			"match_stats": {
+				"kills": 12,
+				"assists": 1,
+				"deaths": 13,
+				"mvps": 2,
+				"score": 30
+			},
+			"position": "-1040.40, 252.88, -171.67",
+			"forward": "0.46, 0.89, -0.01",
+			"state": {
+				"health": 0,
+				"armor": 0,
+				"helmet": false,
+				"flashed": 0,
+				"burning": 0,
+				"money": 150,
+				"round_kills": 0,
+				"round_killhs": 0,
+				"round_totaldmg": 0,
+				"equip_value": 850
+			},
+			"weapons": {
+
+			}
+		},
+		"76561198419104099": {
+			"name": "dilomalo",
+			"observer_slot": 2,
+			"team": "T",
+			"match_stats": {
+				"kills": 9,
+				"assists": 1,
+				"deaths": 8,
+				"mvps": 0,
+				"score": 19
+			},
+			"position": "-1685.41, -2069.66, -263.77",
+			"forward": "0.04, 1.00, 0.07",
+			"state": {
+				"health": 100,
+				"armor": 100,
+				"helmet": false,
+				"flashed": 0,
+				"burning": 0,
+				"money": 450,
+				"round_kills": 1,
+				"round_killhs": 1,
+				"round_totaldmg": 70,
+				"equip_value": 850
+			},
+			"weapons": {
+				"weapon_0": {
+					"name": "weapon_knife_t",
+					"paintkit": "default",
+					"type": "Knife",
+					"state": "holstered"
+				},
+				"weapon_1": {
+					"name": "weapon_glock",
+					"paintkit": "aa_glock_18_urban_moon_fever",
+					"type": "Pistol",
+					"ammo_clip": 17,
+					"ammo_clip_max": 20,
+					"ammo_reserve": 109,
+					"state": "active"
+				}
+			}
+		},
+		"76561198311663311": {
+			"clan": "Ð§Ð£ÐÐÐÐ",
+			"name": "_WOLF___",
+			"observer_slot": 3,
+			"team": "T",
+			"match_stats": {
+				"kills": 16,
+				"assists": 1,
+				"deaths": 7,
+				"mvps": 2,
+				"score": 33
+			},
+			"position": "-137.02, -1819.90, -167.97",
+			"forward": "-0.09, -1.00, -0.02",
+			"state": {
+				"health": 0,
+				"armor": 0,
+				"helmet": false,
+				"flashed": 0,
+				"burning": 0,
+				"money": 600,
+				"round_kills": 0,
+				"round_killhs": 0,
+				"round_totaldmg": 9,
+				"equip_value": 400
+			},
+			"weapons": {
+
+			}
+		},
+		"76561197960397671": {
+			"clan": "MoscowFive",
+			"name": "eXampL",
+			"observer_slot": 9,
+			"team": "CT",
+			"match_stats": {
+				"kills": 5,
+				"assists": 5,
+				"deaths": 13,
+				"mvps": 0,
+				"score": 17
+			},
+			"position": "-510.12, -1462.03, -59.14",
+			"forward": "0.46, 0.89, -0.01",
+			"state": {
+				"health": 0,
+				"armor": 0,
+				"helmet": false,
+				"flashed": 0,
+				"burning": 0,
+				"money": 450,
+				"round_kills": 1,
+				"round_killhs": 1,
+				"round_totaldmg": 100,
+				"equip_value": 850
+			},
+			"weapons": {
+
+			}
+		},
+		"76561198018329356": {
+			"name": "_(:Ð·ãâ )_",
+			"observer_slot": 4,
+			"team": "T",
+			"match_stats": {
+				"kills": 13,
+				"assists": 1,
+				"deaths": 8,
+				"mvps": 2,
+				"score": 27
+			},
+			"position": "-1189.06, 284.15, -165.52",
+			"forward": "-0.90, -0.44, 0.00",
+			"state": {
+				"health": 100,
+				"armor": 0,
+				"helmet": false,
+				"flashed": 0,
+				"burning": 0,
+				"money": 300,
+				"round_kills": 1,
+				"round_killhs": 1,
+				"round_totaldmg": 185,
+				"equip_value": 800
+			},
+			"weapons": {
+				"weapon_0": {
+					"name": "weapon_knife_karambit",
+					"paintkit": "cu_karam_lore",
+					"type": "Knife",
+					"state": "holstered"
+				},
+				"weapon_1": {
+					"name": "weapon_p250",
+					"paintkit": "cu_money",
+					"type": "Pistol",
+					"ammo_clip": 13,
+					"ammo_clip_max": 13,
+					"ammo_reserve": 14,
+					"state": "active"
+				}
+			}
+		},
+		"76561198263530487": {
+			"clan": "48kg SNUS",
+			"name": "disaster",
+			"observer_slot": 0,
+			"team": "CT",
+			"match_stats": {
+				"kills": 7,
+				"assists": 2,
+				"deaths": 14,
+				"mvps": 0,
+				"score": 16
+			},
+			"position": "-2343.17, -480.57, -167.97",
+			"forward": "0.11, 0.99, -0.01",
+			"state": {
+				"health": 0,
+				"armor": 0,
+				"helmet": false,
+				"flashed": 0,
+				"burning": 0,
+				"money": 450,
+				"round_kills": 1,
+				"round_killhs": 1,
+				"round_totaldmg": 100,
+				"equip_value": 850
+			},
+			"weapons": {
+
+			}
+		},
+		"76561198239747884": {
+			"name": "pants low",
+			"observer_slot": 5,
+			"team": "T",
+			"match_stats": {
+				"kills": 15,
+				"assists": 1,
+				"deaths": 12,
+				"mvps": 2,
+				"score": 34
+			},
+			"position": "-2220.34, 492.32, -167.97",
+			"forward": "-0.08, -1.00, -0.02",
+			"state": {
+				"health": 86,
+				"armor": 92,
+				"helmet": false,
+				"flashed": 0,
+				"burning": 0,
+				"money": 750,
+				"round_kills": 1,
+				"round_killhs": 0,
+				"round_totaldmg": 101,
+				"equip_value": 850
+			},
+			"weapons": {
+				"weapon_0": {
+					"name": "weapon_knife_t",
+					"paintkit": "default",
+					"type": "Knife",
+					"state": "holstered"
+				},
+				"weapon_1": {
+					"name": "weapon_glock",
+					"paintkit": "aq_glock_coiled",
+					"type": "Pistol",
+					"ammo_clip": 16,
+					"ammo_clip_max": 20,
+					"ammo_reserve": 100,
+					"state": "active"
+				}
+			}
+		}
+	},
+	"bomb": {
+		"state": "planted",
+		"position": "-1987.03, 413.28, -159.97",
+		"countdown": "30.1"
+	},
+	"phase_countdowns": {
+		"phase": "bomb",
+		"phase_ends_in": "30.1"
+	},
+	"previously": {
+		"player": {
+			"position": "-2193.90, 489.93, -167.97",
+			"forward": "-0.10, -1.00, -0.02"
+		},
+		"allplayers": {
+			"76561198195090814": {
+				"position": "-2096.36, -489.20, -167.97",
+				"forward": "0.46, 0.89, -0.01"
+			},
+			"76561198296535518": {
+				"position": "-2274.69, -603.40, -167.97",
+				"forward": "0.02, 1.00, -0.00"
+			},
+			"76561198000033238": {
+				"forward": "-0.90, -0.43, 0.00"
+			},
+			"76561198352968646": {
+				"forward": "0.49, 0.87, -0.00"
+			},
+			"76561198419104099": {
+				"position": "-1659.31, -2108.57, -261.62",
+				"forward": "0.03, 1.00, 0.07"
+			},
+			"76561198311663311": {
+				"forward": "-0.10, -1.00, -0.02"
+			},
+			"76561197960397671": {
+				"forward": "0.49, 0.87, -0.00"
+			},
+			"76561198018329356": {
+				"position": "-1189.11, 284.13, -165.51"
+			},
+			"76561198239747884": {
+				"position": "-2193.90, 489.93, -167.97",
+				"forward": "-0.10, -1.00, -0.02"
+			}
+		},
+		"bomb": {
+			"countdown": "30.2"
+		},
+		"phase_countdowns": {
+			"phase_ends_in": "30.2"
+		}
+	}
+}

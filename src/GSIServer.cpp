@@ -1,44 +1,93 @@
 #include "GSIServer.h"
+#include <plog/Init.h>
+#include <plog/Log.h>
 
 GSIServer::GSIServer(const std::string& host, int port)
 {
-	server.Post("/", [this](const httplib::Request& req, httplib::Response& res) {
-		bool queueWasEmpty = false;
-		{
-			std::lock_guard<std::mutex> lock(m);
-			if (data.empty())
-				queueWasEmpty = true;
-			data.push(req.body);
-		}
-		if (queueWasEmpty)
-			cv.notify_one(); // notify a thread that waits for new data
+	plog::init(plog::debug, &consoleAdapter);
 
+	server.Post("/", [this](const httplib::Request& req, httplib::Response& res)
+	{
+		receiveData(req.body);
 		res.set_content("{}", "application/json");
 		res.status = 200;
 	});
 
-	t = std::thread([=]{
-		server.listen(host.c_str(), port);
-	});
-}
+	listeningThread = std::thread([=]
+								  {
+									  server.listen(host.c_str(), port);
+									  LOG(plog::info) << "GSI server stopped.";
+								  });
 
-std::string GSIServer::getNextData()
-{
-	std::string ret;
+	const int SERVER_START_TIMEOUT_SECS = 3;
+	LOG(plog::info) << ("Waiting " + std::to_string(SERVER_START_TIMEOUT_SECS) + " seconds for server start...");
+	auto startTime = std::chrono::high_resolution_clock::now();
 
-	std::unique_lock<std::mutex> lock(m);
-	if (data.empty())
-		// No data available. Block thread while waiting for new data.
-		cv.wait(lock);
+	while (!server.is_running())
+	{
+		using namespace std::chrono_literals;
+		using namespace std::chrono;
 
-	ret = data.front();
-	data.pop();
+		std::this_thread::sleep_for(100ms);
 
-	return ret;
+		if (duration_cast<seconds>(
+				high_resolution_clock::now() - startTime).count() > SERVER_START_TIMEOUT_SECS &&
+			!server.is_running())
+		{
+			throw std::logic_error("Could not start the GSI server. Timeout.");
+		}
+	}
+
+	if (server.is_running())
+		LOG(plog::info) << ("GSI server started. Listening on " + host + ":" + std::to_string(port));
 }
 
 GSIServer::~GSIServer()
 {
-	server.stop();
-	t.join();
+	if (!isStopping)
+		stop();
+}
+
+void GSIServer::receiveData(const std::string& body)
+{
+	bool queueWasEmpty = false;
+	{
+		std::lock_guard<std::mutex> lock(dataQueueMutex);
+		if (dataQueue.empty())
+			queueWasEmpty = true;
+		dataQueue.push(body);
+	}
+	if (queueWasEmpty)
+		cv.notify_one(); // notify a thread that waits for new data
+}
+
+std::string GSIServer::getNextDataOrWait()
+{
+	if (isStopping)
+		return "";
+
+	std::string ret;
+
+	std::unique_lock<std::mutex> lock(dataQueueMutex);
+	if (dataQueue.empty())
+		// No data available. Block current thread while waiting for new data.
+		cv.wait(lock);
+
+	if (!dataQueue.empty())
+	{
+		ret = dataQueue.front();
+		dataQueue.pop();
+	}
+
+	return ret;
+}
+
+void GSIServer::stop()
+{
+	isStopping = true;
+	LOG(plog::info) << "Stopping GSI server...";
+	cv.notify_all();
+	if (server.is_running())
+		server.stop();
+	listeningThread.join();
 }
