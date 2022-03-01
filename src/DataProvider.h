@@ -3,7 +3,10 @@
 
 #include <list>
 #include <unordered_map>
+
+#include "DisableMsvcWarnings.h"
 #include <json.hpp>
+#include "EnableMsvcWarnings.h"
 
 #include "DataType.h"
 #include "GSIServer.h"
