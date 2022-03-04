@@ -2,7 +2,9 @@
 #define GAMESTATE_H
 
 #include <string>
+#include <utility>
 #include <vector>
+#include <list>
 
 class GameState
 {
@@ -16,11 +18,11 @@ public:
 		unsigned long timestamp;
 	};
 
-	enum Team
+	enum Side
 	{
-		TEAM_UNKNOWN,
-		T,
-		CT
+		SIDE_UNKNOWN,
+		T_SIDE,
+		CT_SIDE
 	};
 
 	struct Weapon
@@ -37,6 +39,7 @@ public:
 			GRENADE
 		} type;
 
+		// optional values (-1 if undefined)
 		int ammoClip;
 		int ammoClipMax;
 		int ammoReserve;
@@ -51,7 +54,7 @@ public:
 
 	struct Vec3
 	{
-		int x, y, z;
+		double x, y, z;
 	};
 
 	struct Player
@@ -59,10 +62,9 @@ public:
 		std::string steamId;
 		std::string name;
 		unsigned int observerSlot;
-		Team team;
-		std::string activity;
+		Side team;
 
-		struct RoundState
+		struct
 		{
 			int health;
 			int armor;
@@ -77,7 +79,7 @@ public:
 			int equipmentValue;
 		} roundState;
 
-		struct MatchStats
+		struct
 		{
 			int kills;
 			int assists;
@@ -112,13 +114,14 @@ public:
 
 		int roundNo;
 
-		struct TeamStats
+		struct SideStats
 		{
+			Side side;
 			int score;
 			int consecutiveRoundLosses;
 			int timeoutsRemaining;
 			int matchesWonThisSeries;
-		} teamCtStats, teamTStats;
+		} ctSideStats, tSideStats;
 
 		int numberOfMatchesToWinSeries;
 		int currentSpectatorsCount;
@@ -129,7 +132,8 @@ public:
 			MAP_ROUND_WIN_CAUSE_UNKNOWN,
 			CT_WIN_ELIMINATION,
 			CT_WIN_DEFUSE,
-			T_WIN_ELIMINATION
+			T_WIN_ELIMINATION,
+			T_WIN_BOMB
 		};
 		std::vector<RoundWinCause> roundWins;
 	};
@@ -142,16 +146,50 @@ public:
 			PLANTED
 		} bombState;
 		Vec3 position;
-		float countdown;
+		double countdown;
 	};
 
 private:
 	Provider provider;
 	const Player& currentPlayer;
 	MapInfo mapInfo;
-	std::vector<Player> players;
+	std::list<Player> players;
 	BombInfo bombInfo;
 	// TODO: grenades, round?, phase_countdown?
+
+public:
+	GameState(Provider provider, const Player& currentPlayer, MapInfo mapInfo,
+			  std::list<Player> players, BombInfo bombInfo) : provider(std::move(provider)),
+															  currentPlayer(currentPlayer),
+															  mapInfo(std::move(mapInfo)),
+															  players(std::move(players)),
+															  bombInfo(bombInfo)
+	{}
+
+	const Provider& getProvider() const
+	{
+		return provider;
+	}
+
+	const Player& getCurrentPlayer() const
+	{
+		return currentPlayer;
+	}
+
+	const MapInfo& getMapInfo() const
+	{
+		return mapInfo;
+	}
+
+	const std::vector<Player>& getPlayers() const
+	{
+		return players;
+	}
+
+	const BombInfo& getBombInfo() const
+	{
+		return bombInfo;
+	}
 };
 
 #endif //GAMESTATE_H
