@@ -181,7 +181,7 @@ public:
 		return mapInfo;
 	}
 
-	const std::vector<Player>& getPlayers() const
+	const std::list<Player>& getPlayers() const
 	{
 		return players;
 	}

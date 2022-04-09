@@ -9,7 +9,7 @@ TEST_F(GSIClientFixture, ShouldTransferBodySampleFromClientToServer)
 
 	sendNextPostRequest();
 
-	ASSERT_STREQ(bodySamplesIt->c_str(), server->getNextDataOrWait().c_str());
+	ASSERT_EQ(*bodySamplesIt, server->getNextDataOrWait());
 }
 
 TEST_F(GSIClientFixture, ShouldWaitUntilNewDataComes)
@@ -26,15 +26,10 @@ TEST_F(GSIClientFixture, ShouldWaitUntilNewDataComes)
 	if (auto result = sendNextPostRequest())
 	{
 		std::future_status futureStatus = f.wait_for(1s);
-		if (futureStatus != std::future_status::ready)
-			FAIL() << "The server did not return the data.";
-
-		if (result->status == 200)
-			SUCCEED();
-		else
-			FAIL() << "Response from server was not '200'. 'Error' enum value is '" +
-					  std::to_string((int) result.error()) +
-					  "'";
+		ASSERT_TRUE(futureStatus == std::future_status::ready) << "The server did not return the data.";
+		ASSERT_TRUE(result->status == 200) << "Response from server was not '200'. 'Error' enum value is '" +
+											  std::to_string((int) result.error()) +
+											  "'";
 	}
 }
 
@@ -50,7 +45,7 @@ TEST_F(GSIClientFixture, ShouldReceiveSameThatWasSent)
 		ASSERT_EQ(result->status, 200);
 	}
 
-	for (int i = 0; i < bodySamples.size(); ++i)
+	for (const auto& bodySample: bodySamples)
 	{
 		std::future<std::string> f = std::async(std::launch::async, [&]
 		{
@@ -58,10 +53,8 @@ TEST_F(GSIClientFixture, ShouldReceiveSameThatWasSent)
 		});
 
 		std::future_status futureStatus = f.wait_for(1s);
-		if (futureStatus != std::future_status::ready)
-			FAIL() << "The server did not return the data.";
-
-		ASSERT_STREQ(f.get().c_str(), bodySamples[i].c_str());
+		ASSERT_TRUE(futureStatus == std::future_status::ready) << "The server did not return the data.";
+		ASSERT_EQ(f.get(), bodySample);
 	}
 }
 
