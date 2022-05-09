@@ -1,5 +1,75 @@
 #include "GSIPacketParser.h"
 
+#include <plog/Init.h>
+#include <plog/Log.h>
+
+GSIPacketParser::GSIPacketParser()
+{
+	plog::init(plog::debug, &consoleAdapter);
+}
+
+template<typename T>
+void GSIPacketParser::setValueFromJson(T& destination, const nlohmann::json& json, const std::string& key)
+{
+	try
+	{
+		destination = json.at(key);
+	}
+	catch (const std::out_of_range& e)
+	{
+		LOG(plog::error) << "Parser error: " << e.what();
+	}
+}
+
+template<typename T>
+void GSIPacketParser::setMappedValueFromJson(T& destination, const nlohmann::json& json, const std::string& key)
+{
+	try
+	{
+		destination = getMapping<T>(json.at(key));
+	}
+	catch (const std::out_of_range& e)
+	{
+		LOG(plog::error) << "Parser error: " << e.what();
+	}
+}
+
+std::vector<nlohmann::json> GSIPacketParser::getVectorFromJson(const nlohmann::json& json, const std::string& key)
+{
+	try
+	{
+		const auto& array = json.at(key);
+		if (!array.is_array())
+			throw std::logic_error("Value under the key '" + key + "' is not a json array.");
+		return array;
+	}
+	catch (const std::exception& e)
+	{
+		LOG(plog::error) << "Parser error: " << e.what();
+	}
+
+	return {};
+}
+
+std::map<nlohmann::json, nlohmann::json>
+GSIPacketParser::getMapFromJson(const nlohmann::json& json)
+{
+	try
+	{
+		const auto& jsonMap = json;
+		if (!json.is_object())
+			// TODO: Find out how to get a key for which the value is not an object to include to the error msg.
+			throw std::logic_error("Not a json object");
+		return json;
+	}
+	catch (const std::exception& e)
+	{
+		LOG(plog::error) << "Parser error: " << e.what();
+	}
+
+	return {};
+}
+
 template<typename T>
 T GSIPacketParser::getMapping(const nlohmann::json& json)
 {
@@ -16,11 +86,11 @@ template<>
 GameState::Provider GSIPacketParser::getMapping(const nlohmann::json& json)
 {
 	GameState::Provider provider;
-	provider.name = json.at("name");
-	provider.appId = json.at("appid");
-	provider.version = json.at("version");
-	provider.steamId = json.at("steamid");
-	provider.timestamp = json.at("timestamp");
+	setValueFromJson(provider.name, json, "name");
+	setValueFromJson(provider.appId, json, "appid");
+	setValueFromJson(provider.version, json, "version");
+	setValueFromJson(provider.steamId, json, "steamid");
+	setValueFromJson(provider.timestamp, json, "timestamp");
 
 	return provider;
 }
@@ -49,31 +119,31 @@ GameState::MapInfo GSIPacketParser::getMapping(const nlohmann::json& json)
 	GameState::MapInfo mapInfo;
 	std::vector<GameState::MapInfo::RoundWinCause> roundWins;
 
-	for (auto&& roundWin: json.at("round_wins"))
+	for (auto&& roundWin: getVectorFromJson(json, "round_wins"))
 		roundWins.push_back(getMapping<GameState::MapInfo::RoundWinCause>(roundWin));
 
-	mapInfo.mode = getMapping<GameState::MapInfo::Mode>(json.at("mode"));
-	mapInfo.name = json.at("name");
-	mapInfo.phase = json.at("phase");
-	mapInfo.roundNo = json.at("round");
-	mapInfo.ctSideStats = getMapping(json.at("team_ct"), GameState::CT_SIDE);
-	mapInfo.tSideStats = getMapping(json.at("team_t"), GameState::T_SIDE);
-	mapInfo.numberOfMatchesToWinSeries = json.at("num_matches_to_win_series");
-	mapInfo.currentSpectatorsCount = json.at("current_spectators");
-	mapInfo.souvenirsTotal = json.at("souvenirs_total");
+	setMappedValueFromJson(mapInfo.mode, json, "mode");
+	setValueFromJson(mapInfo.name, json, "name");
+	setValueFromJson(mapInfo.phase, json, "phase");
+	setValueFromJson(mapInfo.roundNo, json, "round");
+	setMappedValueFromJson(mapInfo.ctSideStats, json, "team_ct");
+	setMappedValueFromJson(mapInfo.tSideStats, json, "team_t");
+	setValueFromJson(mapInfo.numberOfMatchesToWinSeries, json, "num_matches_to_win_series");
+	setValueFromJson(mapInfo.currentSpectatorsCount, json, "current_spectators");
+	setValueFromJson(mapInfo.souvenirsTotal, json, "souvenirs_total");
 	mapInfo.roundWins = std::move(roundWins);
 
 	return mapInfo;
 }
 
-GameState::MapInfo::SideStats GSIPacketParser::getMapping(const nlohmann::json& json, GameState::Side side)
+template<>
+GameState::MapInfo::SideStats GSIPacketParser::getMapping(const nlohmann::json& json)
 {
-	GameState::MapInfo::SideStats sideStats;
-	sideStats.side = side;
-	sideStats.score = json.at("score");
-	sideStats.consecutiveRoundLosses = json.at("consecutive_round_losses");
-	sideStats.timeoutsRemaining = json.at("timeouts_remaining");
-	sideStats.matchesWonThisSeries = json.at("matches_won_this_series");
+	GameState::MapInfo::SideStats sideStats{GameState::SIDE_UNKNOWN};
+	setValueFromJson(sideStats.score, json, "score");
+	setValueFromJson(sideStats.consecutiveRoundLosses, json, "consecutive_round_losses");
+	setValueFromJson(sideStats.timeoutsRemaining, json, "timeouts_remaining");
+	setValueFromJson(sideStats.matchesWonThisSeries, json, "matches_won_this_series");
 
 	return sideStats;
 }
@@ -82,13 +152,13 @@ template<>
 GameState::Weapon GSIPacketParser::getMapping(const nlohmann::json& json)
 {
 	GameState::Weapon weapon;
-	weapon.name = json.at("name");
-	weapon.paintKit = json.at("paintkit");
-	weapon.type = getMapping<GameState::Weapon::Type>(json.at("type"));
+	setValueFromJson(weapon.name, json, "name");
+	setValueFromJson(weapon.paintKit, json, "paintkit");
+	setMappedValueFromJson(weapon.type, json, "type");
+	setMappedValueFromJson(weapon.state, json, "state");
 	weapon.ammoClip = getOptionalInt(json, "ammo_clip");
 	weapon.ammoClipMax = getOptionalInt(json, "ammo_clip_max");
 	weapon.ammoReserve = getOptionalInt(json, "ammo_reserve");
-	weapon.state = getMapping<GameState::Weapon::State>(json.at("state"));
 
 	return weapon;
 }
@@ -97,55 +167,89 @@ template<>
 GameState::BombInfo GSIPacketParser::getMapping(const nlohmann::json& json)
 {
 	GameState::BombInfo bombInfo;
-	bombInfo.bombState = getMapping<GameState::BombInfo::BombState>(json.at("state"));
-	bombInfo.position = getMapping<GameState::Vec3>(json.at("position"));
-	bombInfo.countdown = std::stod(json.at("countdown").get<std::string>());
+	setMappedValueFromJson(bombInfo.bombState, json, "state");
+	setMappedValueFromJson(bombInfo.position, json, "position");
+	setValueFromJson(bombInfo.countdown, json, "countdown");
 
 	return bombInfo;
 }
 
-GameState::Player GSIPacketParser::parseToPlayer(const nlohmann::json& json, const std::string& steamId)
+template<>
+GameState::Player GSIPacketParser::getMapping(const nlohmann::json& json)
 {
 	GameState::Player player;
-	player.steamId = steamId;
-	player.name = json.at("name");
-	player.observerSlot = json.at("observer_slot");
-	player.team = getMapping<GameState::Side>(json.at("team"));
-	parsePlayerState(json.at("state"), player);
-	parsePlayerStats(json.at("match_stats"), player);
 
-	for (auto&& weapon: json.at("weapons"))
+	auto jsonKeyValue = static_cast<std::pair<nlohmann::json, nlohmann::json>>(json);
+	player.steamId = jsonKeyValue.first;
+	auto jsonObj = jsonKeyValue.second;
+
+	setValueFromJson(player.name, jsonObj, "name");
+	setValueFromJson(player.observerSlot, jsonObj, "observer_slot");
+	setMappedValueFromJson(player.team, jsonObj, "team");
+	setMappedValueFromJson(player.roundState, jsonObj, "state");
+	setMappedValueFromJson(player.matchStats, jsonObj, "match_stats");
+
+	for (auto&& weapon: getVectorFromJson(jsonObj, "weapons"))
 		player.weapons.push_back(getMapping<GameState::Weapon>(weapon));
 
-	player.specTarget = json.at("spectarget");
-	player.position = getMapping<GameState::Vec3>(json.at("position"));
-	player.forward = getMapping<GameState::Vec3>(json.at("forward"));
+	setValueFromJson(player.specTarget, jsonObj, "spectarget");
+	setMappedValueFromJson(player.position, jsonObj, "position");
+	setMappedValueFromJson(player.forward, jsonObj, "forward");
 
 	return player;
 }
 
-void GSIPacketParser::parsePlayerState(const nlohmann::json& json, GameState::Player& player)
+template<>
+GameState::PlayerList GSIPacketParser::getMapping(const nlohmann::json& json)
 {
-	player.roundState.health = json.at("health");
-	player.roundState.armor = json.at("armor");
-	player.roundState.helmet = json.at("helmet");
-	player.roundState.flashed = json.at("flashed");
-	player.roundState.smoked = json.at("smoked");
-	player.roundState.burning = json.at("burning");
-	player.roundState.money = json.at("money");
-	player.roundState.kills = json.at("round_kills");
-	player.roundState.killHeadshots = json.at("round_killhs");
-	player.roundState.totalDamage = json.at("round_totaldmg");
-	player.roundState.equipmentValue = json.at("equip_value");
+	GameState::PlayerList players;
+
+	for (auto&& p: getMapFromJson(json))
+	{
+		players.push_back(getMapping<GameState::Player>(p));
+	}
+
+	return players;
 }
 
-void GSIPacketParser::parsePlayerStats(const nlohmann::json& json, GameState::Player& player)
+template<>
+GameState::Player::RoundState GSIPacketParser::getMapping(const nlohmann::json& json)
 {
-	player.matchStats.kills = json.at("kills");
-	player.matchStats.assists = json.at("assists");
-	player.matchStats.deaths = json.at("deaths");
-	player.matchStats.mvps = json.at("mvps");
-	player.matchStats.score = json.at("score");
+	GameState::Player::RoundState roundState{};
+
+	setValueFromJson(roundState.health, json, "health");
+	setValueFromJson(roundState.armor, json, "armor");
+	setValueFromJson(roundState.helmet, json, "helmet");
+	setValueFromJson(roundState.flashed, json, "flashed");
+	setValueFromJson(roundState.smoked, json, "smoked");
+	setValueFromJson(roundState.burning, json, "burning");
+	setValueFromJson(roundState.money, json, "money");
+	setValueFromJson(roundState.kills, json, "round_kills");
+	setValueFromJson(roundState.killHeadshots, json, "round_killhs");
+	setValueFromJson(roundState.totalDamage, json, "round_totaldmg");
+	setValueFromJson(roundState.equipmentValue, json, "equip_value");
+
+	return roundState;
+}
+
+template<>
+GameState::Player::MatchStats GSIPacketParser::getMapping(const nlohmann::json& json)
+{
+	GameState::Player::MatchStats matchStats{};
+
+	setValueFromJson(matchStats.kills, json, "kills");
+	setValueFromJson(matchStats.assists, json, "assists");
+	setValueFromJson(matchStats.deaths, json, "deaths");
+	setValueFromJson(matchStats.mvps, json, "mvps");
+	setValueFromJson(matchStats.score, json, "score");
+
+	return matchStats;
+}
+
+template<>
+double GSIPacketParser::getMapping(const nlohmann::json& json)
+{
+	return std::stod(json.get<std::string>());
 }
 
 int GSIPacketParser::getOptionalInt(const nlohmann::json& json, const std::string& key)
@@ -159,24 +263,20 @@ int GSIPacketParser::getOptionalInt(const nlohmann::json& json, const std::strin
 
 GameState GSIPacketParser::parse(nlohmann::json json)
 {
-	auto provider = getMapping<GameState::Provider>(json.at("provider"));
-	auto mapInfo = getMapping<GameState::MapInfo>(json.at("map"));
-	auto bombInfo = getMapping<GameState::BombInfo>(json.at("bomb"));
-	auto currentPlayerSteamId = json.at("player").at("steamid").get<std::string>();
+	GameState::Provider provider;
+	GameState::MapInfo mapInfo;
+	GameState::BombInfo bombInfo;
+	GameState::PlayerList players;
 
-	std::list<GameState::Player> players;
-	std::list<GameState::Player>::iterator currentPlayerIt;
-	for (auto&& p: json.at("allplayers").items())
-	{
-		players.push_back(parseToPlayer(p.value(), p.key()));
-		if (p.key() == currentPlayerSteamId)
-		{
-			currentPlayerIt = std::prev(players.end(), 1);
-		}
-	}
+	setMappedValueFromJson(provider, json, "provider");
+	setMappedValueFromJson(mapInfo, json, "map");
+	setMappedValueFromJson(bombInfo, json, "bomb");
+	setMappedValueFromJson(players, json, "allplayers");
 
-	return {provider, *currentPlayerIt, mapInfo, players, bombInfo};
+	return {provider, mapInfo, players, bombInfo};
 }
+
+// Mappings of strings from json to enum types (GameState class)
 
 template<>
 const std::map<std::string, GameState::Side> GSIPacketParser::MapperTypeMap<GameState::Side>::mapper = {

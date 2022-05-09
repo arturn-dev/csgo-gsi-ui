@@ -40,9 +40,9 @@ public:
 		} type;
 
 		// optional values (-1 if undefined)
-		int ammoClip;
-		int ammoClipMax;
-		int ammoReserve;
+		int ammoClip = -1;
+		int ammoClipMax = -1;
+		int ammoReserve = -1;
 
 		enum State
 		{
@@ -64,7 +64,7 @@ public:
 		unsigned int observerSlot;
 		Side team;
 
-		struct
+		struct RoundState
 		{
 			int health;
 			int armor;
@@ -79,7 +79,7 @@ public:
 			int equipmentValue;
 		} roundState;
 
-		struct
+		struct MatchStats
 		{
 			int kills;
 			int assists;
@@ -93,6 +93,7 @@ public:
 		Vec3 position;
 		Vec3 forward;
 	};
+	typedef std::list<GameState::Player> PlayerList;
 
 	enum GamePhase
 	{
@@ -116,12 +117,27 @@ public:
 
 		struct SideStats
 		{
-			Side side;
-			int score;
-			int consecutiveRoundLosses;
-			int timeoutsRemaining;
-			int matchesWonThisSeries;
-		} ctSideStats, tSideStats;
+			explicit SideStats(const Side side) : side(side)
+			{}
+
+			SideStats(const SideStats& other) = default;
+
+			SideStats& operator=(const SideStats& other)
+			{
+				score = other.score;
+				consecutiveRoundLosses = other.consecutiveRoundLosses;
+				timeoutsRemaining = other.timeoutsRemaining;
+				matchesWonThisSeries = other.matchesWonThisSeries;
+
+				return *this;
+			}
+
+			const Side side;
+			int score{};
+			int consecutiveRoundLosses{};
+			int timeoutsRemaining{};
+			int matchesWonThisSeries{};
+		} ctSideStats{CT_SIDE}, tSideStats{T_SIDE};
 
 		int numberOfMatchesToWinSeries;
 		int currentSpectatorsCount;
@@ -151,16 +167,15 @@ public:
 
 private:
 	Provider provider;
-	const Player& currentPlayer;
+	//const Player& currentPlayer; TODO: Is it really necessary? Maybe some other idea to indicate currently viewed player.
 	MapInfo mapInfo;
-	std::list<Player> players;
+	PlayerList players;
 	BombInfo bombInfo;
 	// TODO: grenades, round?, phase_countdown?
 
 public:
-	GameState(Provider provider, const Player& currentPlayer, MapInfo mapInfo,
+	GameState(Provider provider, MapInfo mapInfo,
 			  std::list<Player> players, BombInfo bombInfo) : provider(std::move(provider)),
-															  currentPlayer(currentPlayer),
 															  mapInfo(std::move(mapInfo)),
 															  players(std::move(players)),
 															  bombInfo(bombInfo)
@@ -171,17 +186,12 @@ public:
 		return provider;
 	}
 
-	const Player& getCurrentPlayer() const
-	{
-		return currentPlayer;
-	}
-
 	const MapInfo& getMapInfo() const
 	{
 		return mapInfo;
 	}
 
-	const std::list<Player>& getPlayers() const
+	const PlayerList& getPlayers() const
 	{
 		return players;
 	}
