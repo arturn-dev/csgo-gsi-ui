@@ -15,7 +15,7 @@ void GSIPacketParser::setValueFromJson(T& destination, const nlohmann::json& jso
 	{
 		destination = json.at(key);
 	}
-	catch (const std::out_of_range& e)
+	catch (const nlohmann::json::out_of_range& e)
 	{
 		LOG(plog::error) << "Parser error: " << e.what();
 	}
@@ -28,7 +28,7 @@ void GSIPacketParser::setMappedValueFromJson(T& destination, const nlohmann::jso
 	{
 		destination = getMapping<T>(json.at(key));
 	}
-	catch (const std::out_of_range& e)
+	catch (const nlohmann::json::out_of_range& e)
 	{
 		LOG(plog::error) << "Parser error: " << e.what();
 	}
@@ -38,10 +38,17 @@ std::vector<nlohmann::json> GSIPacketParser::getVectorFromJson(const nlohmann::j
 {
 	try
 	{
-		const auto& array = json.at(key);
-		if (!array.is_array())
-			throw std::logic_error("Value under the key '" + key + "' is not a json array.");
-		return array;
+		const auto& jsonObject = json.at(key);
+		if (!jsonObject.is_object())
+			throw std::logic_error("Value under the key '" + key + "' is not a json object.");
+
+		std::vector<nlohmann::json> vRet;
+		for (const auto& entry: jsonObject.get<std::map<nlohmann::json, nlohmann::json>>())
+		{
+			vRet.push_back(entry.second);
+		}
+
+		return vRet;
 	}
 	catch (const std::exception& e)
 	{
@@ -56,7 +63,6 @@ GSIPacketParser::getMapFromJson(const nlohmann::json& json)
 {
 	try
 	{
-		const auto& jsonMap = json;
 		if (!json.is_object())
 			// TODO: Find out how to get a key for which the value is not an object to include to the error msg.
 			throw std::logic_error("Not a json object");

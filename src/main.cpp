@@ -29,8 +29,7 @@ int main()
 				if (data.empty())
 				{
 					cout << "No data available.\n";
-				}
-				else
+				} else
 				{
 					cout << "=== DATA START ===\n";
 					cout << data << '\n';

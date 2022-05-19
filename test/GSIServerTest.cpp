@@ -57,27 +57,3 @@ TEST_F(GSIClientFixture, ShouldReceiveSameThatWasSent)
 		ASSERT_EQ(f.get(), bodySample);
 	}
 }
-
-TEST_F(GSIClientFixture, Utility_GetSamplesAndSave)
-{
-	GTEST_SKIP();
-	auto server = std::make_unique<GSIServer>(address, port);
-
-	const int SAMPLES_COUNT = 10;
-
-	for (int i = 0; i < SAMPLES_COUNT; ++i)
-	{
-		const std::string filePath = std::string(dirPath)
-				.append("/")
-				.append(filenamePrefix)
-				.append(std::to_string(i))
-				.append(".txt");
-		const std::string data = server->getNextDataOrWait();
-
-		std::ofstream ofs(filePath);
-		if (!ofs.good())
-			FAIL() << "Couldn't open the file: " + filePath;
-		ofs.write(data.c_str(), static_cast<long long>(data.size()));
-		ofs.close();
-	}
-}

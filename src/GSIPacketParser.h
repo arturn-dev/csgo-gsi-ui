@@ -34,7 +34,7 @@ class GSIPacketParser
 	std::map<nlohmann::json, nlohmann::json>
 	getMapFromJson(const nlohmann::json& json);
 
-	// TODO: Consider changing the idea of passing the 'json' object to every call by saving a reference to it as a class member.
+	// TODO: Consider the idea of changing passing the 'json' object to every call by saving a reference to it as a class member.
 	template<typename T>
 	T getMapping(const nlohmann::json& json);
 

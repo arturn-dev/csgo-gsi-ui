@@ -1,0 +1,124 @@
+{
+    "allplayers": {
+        "1": {
+            "name": "Player 1",
+            "observer_slot": 1,
+            "team": "CT",
+            "match_stats": {
+                "kills": 8,
+                "assists": 6,
+                "deaths": 4,
+                "mvps": 0,
+                "score": 22
+            },
+            "position": "2349.31, -349.82, 88.63",
+            "forward": "-0.63, 0.78, 0.05",
+            "state": {
+                "health": 73,
+                "armor": 96,
+                "helmet": true,
+                "defusekit": true,
+                "flashed": 0,
+                "burning": 0,
+                "money": 5350,
+                "round_kills": 1,
+                "round_killhs": 1,
+                "round_totaldmg": 100,
+                "equip_value": 5700
+            },
+            "weapons": {
+                "weapon_0": {
+                    "name": "weapon_knife",
+                    "paintkit": "default",
+                    "type": "Knife",
+                    "state": "holstered"
+                },
+                "weapon_1": {
+                    "name": "weapon_usp_silencer",
+                    "paintkit": "default",
+                    "type": "Pistol",
+                    "ammo_clip": 12,
+                    "ammo_clip_max": 12,
+                    "ammo_reserve": 24,
+                    "state": "holstered"
+                },
+                "weapon_2": {
+                    "name": "weapon_ak47",
+                    "paintkit": "aq_ak47_cartel",
+                    "type": "Rifle",
+                    "ammo_clip": 21,
+                    "ammo_clip_max": 30,
+                    "ammo_reserve": 90,
+                    "state": "active"
+                },
+                "weapon_3": {
+                    "name": "weapon_hegrenade",
+                    "paintkit": "default",
+                    "type": "Grenade",
+                    "ammo_reserve": 1,
+                    "state": "holstered"
+                },
+                "weapon_4": {
+                    "name": "weapon_flashbang",
+                    "paintkit": "default",
+                    "type": "Grenade",
+                    "ammo_reserve": 1,
+                    "state": "holstered"
+                }
+            }
+        },
+        "2": {
+            "clan": "Clan 2",
+            "name": "Player 2",
+            "observer_slot": 2,
+            "team": "CT",
+            "match_stats": {
+                "kills": 8,
+                "assists": 0,
+                "deaths": 4,
+                "mvps": 2,
+                "score": 16
+            },
+            "position": "1816.31, 1401.86, 160.03",
+            "forward": "-0.16, 0.99, -0.07",
+            "state": {
+                "health": 100,
+                "armor": 94,
+                "helmet": true,
+                "flashed": 0,
+                "burning": 0,
+                "money": 7400,
+                "round_kills": 0,
+                "round_killhs": 0,
+                "round_totaldmg": 0,
+                "equip_value": 7850
+            },
+            "weapons": {
+                "weapon_0": {
+                    "name": "weapon_knife_gut",
+                    "paintkit": "aq_damascus",
+                    "type": "Knife",
+                    "state": "active"
+                },
+                "weapon_1": {
+                    "name": "weapon_deagle",
+                    "paintkit": "default",
+                    "type": "Pistol",
+                    "ammo_clip": 7,
+                    "ammo_clip_max": 7,
+                    "ammo_reserve": 35,
+                    "state": "holstered"
+                },
+                "weapon_2": {
+                    "name": "weapon_awp",
+                    "paintkit": "cu_awp_vein",
+                    "type": "SniperRifle",
+                    "ammo_clip": 9,
+                    "ammo_clip_max": 10,
+                    "ammo_reserve": 30,
+                    "state": "holstered"
+                }
+            }
+        }
+    }
+}
