@@ -107,13 +107,11 @@ GameState::Vec3 GSIPacketParser::getMapping(const nlohmann::json& json)
 	double values[3] = {0.0};
 	auto valuesStr = json.get<std::string>();
 	auto commaPos = valuesStr.find(',');
-	int i = 0;
-	while (commaPos != std::string::npos && i < 3)
+	for (double& value: values)
 	{
-		values[i] = std::stod(valuesStr.substr(0, commaPos - 1));
+		value = std::stod(valuesStr.substr(0, commaPos));
 		valuesStr = valuesStr.substr(commaPos + 1);
 		commaPos = valuesStr.find(',');
-		i++;
 	}
 
 	return {values[0], values[1], values[2]};
@@ -293,11 +291,13 @@ const std::map<std::string, GameState::Side> GSIPacketParser::MapperTypeMap<Game
 
 template<>
 const std::map<std::string, GameState::Weapon::Type> GSIPacketParser::MapperTypeMap<GameState::Weapon::Type>::mapper = {
-		{"Knife",   GameState::Weapon::KNIFE},
-		{"Pistol",  GameState::Weapon::PISTOL},
-		{"Rifle",   GameState::Weapon::RIFLE},
+		{"Knife", GameState::Weapon::KNIFE},
+		{"Pistol", GameState::Weapon::PISTOL},
+		{"Rifle", GameState::Weapon::RIFLE},
 		{"Grenade", GameState::Weapon::GRENADE},
-		{{},        GameState::Weapon::WEAPON_TYPE_UNKNOWN}
+		{"SniperRifle", GameState::Weapon::SNIPER_RIFLE},
+		{"C4", GameState::Weapon::C4},
+		{{}, GameState::Weapon::WEAPON_TYPE_UNKNOWN}
 };
 
 template<>

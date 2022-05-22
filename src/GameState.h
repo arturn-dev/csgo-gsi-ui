@@ -4,7 +4,6 @@
 #include <string>
 #include <utility>
 #include <vector>
-#include <list>
 
 class GameState
 {
@@ -36,7 +35,9 @@ public:
 			KNIFE,
 			PISTOL,
 			RIFLE,
-			GRENADE
+			GRENADE,
+			C4,
+			SNIPER_RIFLE
 		} type;
 
 		// optional values (-1 if undefined)
@@ -70,7 +71,7 @@ public:
 			int armor;
 			bool helmet;
 			int flashed;
-			int smoked;
+			int smoked = -1; // Only for currently spectated player, otherwise: -1
 			int burning;
 			int money;
 			int kills;
@@ -93,7 +94,8 @@ public:
 		Vec3 position;
 		Vec3 forward;
 	};
-	typedef std::list<GameState::Player> PlayerList;
+
+	typedef std::vector<GameState::Player> PlayerList;
 
 	enum GamePhase
 	{
@@ -122,15 +124,7 @@ public:
 
 			SideStats(const SideStats& other) = default;
 
-			SideStats& operator=(const SideStats& other)
-			{
-				score = other.score;
-				consecutiveRoundLosses = other.consecutiveRoundLosses;
-				timeoutsRemaining = other.timeoutsRemaining;
-				matchesWonThisSeries = other.matchesWonThisSeries;
-
-				return *this;
-			}
+			SideStats& operator=(const SideStats& other);
 
 			const Side side;
 			int score{};
@@ -174,11 +168,13 @@ private:
 	// TODO: grenades, round?, phase_countdown?
 
 public:
+	GameState() = default;
+
 	GameState(Provider provider, MapInfo mapInfo,
-			  std::list<Player> players, BombInfo bombInfo) : provider(std::move(provider)),
-															  mapInfo(std::move(mapInfo)),
-															  players(std::move(players)),
-															  bombInfo(bombInfo)
+			  PlayerList players, BombInfo bombInfo) : provider(std::move(provider)),
+													   mapInfo(std::move(mapInfo)),
+													   players(std::move(players)),
+													   bombInfo(bombInfo)
 	{}
 
 	const Provider& getProvider() const

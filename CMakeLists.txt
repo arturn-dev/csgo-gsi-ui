@@ -25,6 +25,7 @@ add_executable(main_test "${TEST_SOURCE_FILES}"
         src/GSIServer.cpp
         src/DataProvider.cpp
         src/GSIPacketParser.cpp
+        src/GameState.cpp
         )
 
 target_link_libraries(main_test gtest_main)
