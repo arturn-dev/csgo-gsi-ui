@@ -245,3 +245,71 @@ TEST(GSIPacketParser, ShouldCorrectlyParsePlayers)
 		ASSERT_NO_FATAL_FAILURE(assertPlayer(playerExpected, playerActual)) << "i was " + std::to_string(i);
 	}
 }
+
+TEST(GSIPacketParser, ShouldCorrectlyParseMapInfo)
+{
+	GameState::MapInfo mapInfo;
+	mapInfo.mode = GameState::MapInfo::COMPETITIVE;
+	mapInfo.name = "de_inferno";
+	mapInfo.phase = GameState::LIVE;
+	mapInfo.roundNo = 9;
+	mapInfo.numberOfMatchesToWinSeries = 0;
+	mapInfo.currentSpectatorsCount = 1;
+	mapInfo.souvenirsTotal = 0;
+
+	mapInfo.ctSideStats.score = 8;
+	mapInfo.ctSideStats.consecutiveRoundLosses = 0;
+	mapInfo.ctSideStats.timeoutsRemaining = 1;
+	mapInfo.ctSideStats.matchesWonThisSeries = 0;
+
+	mapInfo.tSideStats.score = 1;
+	mapInfo.tSideStats.consecutiveRoundLosses = 6;
+	mapInfo.tSideStats.timeoutsRemaining = 1;
+	mapInfo.tSideStats.matchesWonThisSeries = 0;
+
+	using RoundWinCause = GameState::MapInfo::RoundWinCause;
+	mapInfo.roundWins = {
+			RoundWinCause::CT_WIN_DEFUSE,
+			RoundWinCause::CT_WIN_ELIMINATION,
+			RoundWinCause::CT_WIN_ELIMINATION,
+			RoundWinCause::CT_WIN_ELIMINATION,
+			RoundWinCause::CT_WIN_ELIMINATION,
+			RoundWinCause::T_WIN_ELIMINATION,
+			RoundWinCause::CT_WIN_ELIMINATION,
+			RoundWinCause::CT_WIN_ELIMINATION,
+			RoundWinCause::CT_WIN_ELIMINATION,
+	};
+
+	GameState gameState;
+	ASSERT_NO_FATAL_FAILURE(parseFileToGameState("../test/data/map.json", gameState));
+
+	ASSERT_NO_FATAL_FAILURE(assertMapInfo(mapInfo, gameState.getMapInfo()));
+}
+
+TEST(GSIPacketParser, ShouldCorrectlyParseProvider)
+{
+	GameState::Provider provider;
+	provider.name = "Counter-Strike: Global Offensive",
+			provider.appId = 730;
+	provider.version = 13831;
+	provider.steamId = "9999";
+	provider.timestamp = 1652817929;
+
+	GameState gameState;
+	ASSERT_NO_FATAL_FAILURE(parseFileToGameState("../test/data/provider.json", gameState));
+
+	ASSERT_NO_FATAL_FAILURE(assertProvider(provider, gameState.getProvider()));
+}
+
+TEST(GSIPacketParser, ShouldCorrectlyParseBombInfo)
+{
+	GameState::BombInfo bombInfo;
+	bombInfo.bombState = GameState::BombInfo::CARRIED;
+	bombInfo.position = {807.02, 2491.80, 138.57};
+	bombInfo.countdown = INFINITY;
+
+	GameState gameState;
+	ASSERT_NO_FATAL_FAILURE(parseFileToGameState("../test/data/bomb_info.json", gameState));
+
+	ASSERT_NO_FATAL_FAILURE(assertBombInfo(bombInfo, gameState.getBombInfo()));
+}

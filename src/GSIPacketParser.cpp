@@ -128,7 +128,7 @@ GameState::MapInfo GSIPacketParser::getMapping(const nlohmann::json& json)
 
 	setMappedValueFromJson(mapInfo.mode, json, "mode");
 	setValueFromJson(mapInfo.name, json, "name");
-	setValueFromJson(mapInfo.phase, json, "phase");
+	setMappedValueFromJson(mapInfo.phase, json, "phase");
 	setValueFromJson(mapInfo.roundNo, json, "round");
 	setMappedValueFromJson(mapInfo.ctSideStats, json, "team_ct");
 	setMappedValueFromJson(mapInfo.tSideStats, json, "team_t");
@@ -291,13 +291,13 @@ const std::map<std::string, GameState::Side> GSIPacketParser::MapperTypeMap<Game
 
 template<>
 const std::map<std::string, GameState::Weapon::Type> GSIPacketParser::MapperTypeMap<GameState::Weapon::Type>::mapper = {
-		{"Knife", GameState::Weapon::KNIFE},
-		{"Pistol", GameState::Weapon::PISTOL},
-		{"Rifle", GameState::Weapon::RIFLE},
-		{"Grenade", GameState::Weapon::GRENADE},
+		{"Knife",       GameState::Weapon::KNIFE},
+		{"Pistol",      GameState::Weapon::PISTOL},
+		{"Rifle",       GameState::Weapon::RIFLE},
+		{"Grenade",     GameState::Weapon::GRENADE},
 		{"SniperRifle", GameState::Weapon::SNIPER_RIFLE},
-		{"C4", GameState::Weapon::C4},
-		{{}, GameState::Weapon::WEAPON_TYPE_UNKNOWN}
+		{"C4",          GameState::Weapon::C4},
+		{{},            GameState::Weapon::WEAPON_TYPE_UNKNOWN}
 };
 
 template<>
@@ -331,5 +331,6 @@ const std::map<std::string, GameState::MapInfo::RoundWinCause> GSIPacketParser::
 template<>
 const std::map<std::string, GameState::BombInfo::BombState> GSIPacketParser::MapperTypeMap<GameState::BombInfo::BombState>::mapper = {
 		{"planted", GameState::BombInfo::PLANTED},
+		{"carried", GameState::BombInfo::CARRIED},
 		{{},        GameState::BombInfo::BOMB_STATE_UNKNOWN},
 };

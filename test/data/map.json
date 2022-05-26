@@ -1,0 +1,34 @@
+{
+  "map": {
+    "mode": "competitive",
+    "name": "de_inferno",
+    "phase": "live",
+    "round": 9,
+    "team_ct": {
+      "score": 8,
+      "consecutive_round_losses": 0,
+      "timeouts_remaining": 1,
+      "matches_won_this_series": 0
+    },
+    "team_t": {
+      "score": 1,
+      "consecutive_round_losses": 6,
+      "timeouts_remaining": 1,
+      "matches_won_this_series": 0
+    },
+    "num_matches_to_win_series": 0,
+    "current_spectators": 1,
+    "souvenirs_total": 0,
+    "round_wins": {
+      "1": "ct_win_defuse",
+      "2": "ct_win_elimination",
+      "3": "ct_win_elimination",
+      "4": "ct_win_elimination",
+      "5": "ct_win_elimination",
+      "6": "t_win_elimination",
+      "7": "ct_win_elimination",
+      "8": "ct_win_elimination",
+      "9": "ct_win_elimination"
+    }
+  }
+}

@@ -153,10 +153,11 @@ public:
 		enum BombState
 		{
 			BOMB_STATE_UNKNOWN,
-			PLANTED
+			PLANTED,
+			CARRIED
 		} bombState;
 		Vec3 position;
-		double countdown;
+		double countdown = INFINITY;
 	};
 
 private:
