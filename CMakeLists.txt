@@ -20,7 +20,14 @@ FetchContent_MakeAvailable(googletest)
 
 enable_testing()
 
-add_executable(main_test test/GSIServerTest.cpp src/GSIServer.cpp test/DataProviderTest.cpp src/DataProvider.cpp)
+file(GLOB TEST_SOURCE_FILES test/*.cpp)
+add_executable(main_test "${TEST_SOURCE_FILES}"
+        src/GSIServer.cpp
+        src/DataProvider.cpp
+        src/GSIPacketParser.cpp
+        src/GameState.cpp
+        )
+
 target_link_libraries(main_test gtest_main)
 target_include_directories(main_test PUBLIC "${HTTPLIB_INCLUDE_DIR}")
 target_include_directories(main_test PUBLIC "${NLOHMANN_INCLUDE_DIR}")

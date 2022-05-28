@@ -13,6 +13,12 @@ file(GLOB_RECURSE HEADER_FILES
 # Define the executable
 add_executable(${PROJECT_NAME} ${HEADER_FILES} ${SOURCE_FILES})
 
+if (MSVC)
+    target_compile_options(${PROJECT_NAME} PRIVATE /W4 /WX)
+else ()
+    target_compile_options(${PROJECT_NAME} PRIVATE -Wall -Wextra -pedantic -Werror)
+endif ()
+
 # Define the include DIRs
 target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 target_include_directories(${PROJECT_NAME} PUBLIC "${GLFW_INCLUDE_DIR}")

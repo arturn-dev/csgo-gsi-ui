@@ -14,7 +14,7 @@ protected:
 		GSIClientFixture::TearDown();
 	}
 
-	DataProvider dataProvider = DataProvider("127.0.0.1", 3001);
+	DataProvider dataProvider = DataProvider("127.0.0.1", port);
 };
 
 struct DataProviderListener : public IDataProviderListener
