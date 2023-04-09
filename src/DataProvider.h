@@ -10,6 +10,7 @@
 
 #include "DataType.h"
 #include "GSIServer.h"
+#include "GSIPacketParser.h"
 
 class IDataProviderListener;
 
@@ -19,6 +20,8 @@ private:
 	std::unordered_multimap<DataType, IDataProviderListener*> listeners;
 	std::thread dataFetchThread;
 	GSIServer _gsiServer;
+	GSIPacketParser gsiPacketParser;
+
 
 	std::atomic_bool isBeingDestroyed;
 
@@ -38,7 +41,7 @@ private:
 class IDataProviderListener
 {
 public:
-	virtual void update(const nlohmann::json& data, DataType dataType) = 0;
+	virtual void update(const GameState& data, DataType dataType) = 0;
 };
 
 #endif //DATAPROVIDER_H

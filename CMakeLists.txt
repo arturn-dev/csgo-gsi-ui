@@ -29,6 +29,7 @@ add_executable(main_test "${TEST_SOURCE_FILES}"
         )
 
 target_link_libraries(main_test gtest_main)
+target_include_directories(main_test PUBLIC test)
 target_include_directories(main_test PUBLIC "${HTTPLIB_INCLUDE_DIR}")
 target_include_directories(main_test PUBLIC "${NLOHMANN_INCLUDE_DIR}")
 target_include_directories(main_test PUBLIC "${PLOG_INCLUDE_DIR}")

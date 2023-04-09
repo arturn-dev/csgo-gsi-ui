@@ -2,6 +2,8 @@
 #include "gtest/gtest.h"
 #include "gtest/gtest-printers.h"
 #include "../../src/GSIPacketParser.h"
+#include "GSIPacketParserTest.h"
+
 
 void assertVec3(const GameState::Vec3& lhs, const GameState::Vec3& rhs)
 {
@@ -99,6 +101,19 @@ void assertProvider(const GameState::Provider& lhs, const GameState::Provider& r
 	ASSERT_EQ(lhs.version, rhs.version);
 	ASSERT_EQ(lhs.steamId, rhs.steamId);
 	ASSERT_EQ(lhs.timestamp, rhs.timestamp);
+}
+
+void assertGameState(const GameState& lhs, const GameState& rhs)
+{
+	assertBombInfo(lhs.getBombInfo(), rhs.getBombInfo());
+	assertMapInfo(lhs.getMapInfo(), rhs.getMapInfo());
+	ASSERT_EQ(lhs.getPlayers().size(), rhs.getPlayers().size());
+	for (int i = 0; i < lhs.getPlayers().size(); ++i)
+	{
+		assertPlayer(lhs.getPlayers()[i], rhs.getPlayers()[i]);
+	}
+
+	assertProvider(lhs.getProvider(), rhs.getProvider());
 }
 
 GameState::Player

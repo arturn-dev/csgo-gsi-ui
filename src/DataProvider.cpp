@@ -29,7 +29,7 @@ void DataProvider::subscribe(IDataProviderListener* listener, DataType dataType)
 void DataProvider::unsubscribe(IDataProviderListener* listener)
 {
 	if (listener == nullptr) return;
-	
+
 	auto predicate = [listener](const std::pair<DataType, IDataProviderListener*>& entry)
 	{ return entry.second == listener; };
 	auto foundEntryIt = std::find_if(listeners.begin(), listeners.end(), predicate);
@@ -42,8 +42,9 @@ void DataProvider::unsubscribe(IDataProviderListener* listener)
 
 void DataProvider::notify(const nlohmann::json& data, DataType dataType)
 {
+	auto gameState = gsiPacketParser.parse(data);
 	auto bucketIndex = listeners.bucket(dataType);
 	std::for_each(listeners.begin(bucketIndex), listeners.end(bucketIndex),
 				  [&](auto& listener)
-				  { listener.second->update(data, dataType); });
+				  { listener.second->update(gameState, dataType); });
 }
