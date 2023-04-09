@@ -71,7 +71,7 @@ public:
 			int armor;
 			bool helmet;
 			int flashed;
-			int smoked = -1; // Only for currently spectated player, otherwise: -1
+			int smoked = -1; // Valid only for currently spectated player, otherwise: -1
 			int burning;
 			int money;
 			int kills;
@@ -90,7 +90,7 @@ public:
 		} matchStats;
 
 		std::vector<Weapon> weapons;
-		std::string specTarget;
+		std::string specTarget; // Valid only for currently spectated player, otherwise empty
 		Vec3 position;
 		Vec3 forward;
 	};

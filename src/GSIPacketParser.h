@@ -31,14 +31,11 @@ class GSIPacketParser
 
 	std::vector<nlohmann::json> getVectorFromJson(const nlohmann::json& json, const std::string& key);
 
-	std::map<nlohmann::json, nlohmann::json>
-	getMapFromJson(const nlohmann::json& json);
+	std::map<nlohmann::json, nlohmann::json> getMapFromJson(const nlohmann::json& json);
 
 	// TODO: Consider the idea of changing passing the 'json' object to every call by saving a reference to it as a class member.
 	template<typename T>
 	T getMapping(const nlohmann::json& json);
-
-	GameState::MapInfo::SideStats getMapping(const nlohmann::json& json);
 
 	int getOptionalInt(const nlohmann::json& json, const std::string& key);
 

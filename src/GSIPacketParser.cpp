@@ -11,11 +11,17 @@ GSIPacketParser::GSIPacketParser()
 template<typename T>
 void GSIPacketParser::setValueFromJson(T& destination, const nlohmann::json& json, const std::string& key)
 {
+	// "smoked" and "spectarget" exists only for currently spectated player ("/player")
+	if ((key == "smoked" || key == "spectarget") && !json.contains(key))
+	{
+		return;
+	}
+
 	try
 	{
 		destination = json.at(key);
 	}
-	catch (const nlohmann::json::out_of_range& e)
+	catch (const std::exception& e)
 	{
 		LOG(plog::error) << "Parser error: " << e.what();
 	}
@@ -28,7 +34,7 @@ void GSIPacketParser::setMappedValueFromJson(T& destination, const nlohmann::jso
 	{
 		destination = getMapping<T>(json.at(key));
 	}
-	catch (const nlohmann::json::out_of_range& e)
+	catch (const std::exception& e)
 	{
 		LOG(plog::error) << "Parser error: " << e.what();
 	}
@@ -173,7 +179,7 @@ GameState::BombInfo GSIPacketParser::getMapping(const nlohmann::json& json)
 	GameState::BombInfo bombInfo;
 	setMappedValueFromJson(bombInfo.bombState, json, "state");
 	setMappedValueFromJson(bombInfo.position, json, "position");
-	setValueFromJson(bombInfo.countdown, json, "countdown");
+	setMappedValueFromJson(bombInfo.countdown, json, "countdown");
 
 	return bombInfo;
 }
