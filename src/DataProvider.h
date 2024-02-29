@@ -2,13 +2,12 @@
 #define DATAPROVIDER_H
 
 #include <list>
-#include <unordered_map>
+#include <set>
 
 #include "DisableMsvcWarnings.h"
 #include <json.hpp>
 #include "EnableMsvcWarnings.h"
 
-#include "DataType.h"
 #include "GSIServer.h"
 #include "GSIPacketParser.h"
 
@@ -17,7 +16,7 @@ class IDataProviderListener;
 class DataProvider
 {
 private:
-	std::unordered_multimap<DataType, IDataProviderListener*> listeners;
+	std::set<IDataProviderListener*> listeners;
 	std::thread dataFetchThread;
 	GSIServer _gsiServer;
 	GSIPacketParser gsiPacketParser;
@@ -30,18 +29,18 @@ public:
 
 	virtual ~DataProvider();
 
-	void subscribe(IDataProviderListener* listener, DataType dataType);
+	void subscribe(IDataProviderListener* listener);
 
 	void unsubscribe(IDataProviderListener* listener);
 
 private:
-	void notify(const nlohmann::json& data, DataType dataType);
+	void notify(const nlohmann::json& data);
 };
 
 class IDataProviderListener
 {
 public:
-	virtual void update(const GameState& data, DataType dataType) = 0;
+	virtual void handleNewData(const GameState& data) = 0;
 };
 
 #endif //DATAPROVIDER_H

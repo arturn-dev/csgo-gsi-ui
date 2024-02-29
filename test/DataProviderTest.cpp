@@ -27,7 +27,7 @@ struct DataProviderListener : public IDataProviderListener
 	std::condition_variable cv;
 	std::mutex m;
 
-	void update(const GameState& data, DataType dataType) override
+	void handleNewData(const GameState& data) override
 	{
 		updateInvoked = false;
 		this->data = data;
@@ -54,7 +54,7 @@ TEST_F(DataProviderTestListenerFixture, ShouldReceiveAllData)
 {
 	DataProviderListener dataProviderListener;
 
-	dataProvider.subscribe(&dataProviderListener, DATA_RAW);
+	dataProvider.subscribe(&dataProviderListener);
 
 	for (int i = 0; i < bodySamples.size(); i++)
 	{
@@ -70,7 +70,7 @@ TEST_F(DataProviderTestListenerFixture, ShouldReceiveOnlyFirstSample)
 {
 	DataProviderListener dataProviderListener;
 
-	dataProvider.subscribe(&dataProviderListener, DATA_RAW);
+	dataProvider.subscribe(&dataProviderListener);
 
 	sendNextPostRequest();
 	dataProviderListener.waitForUpdate();
@@ -87,7 +87,7 @@ TEST_F(DataProviderTestListenerFixture, ShouldReceiveSampleOnAllListeners)
 	std::vector<DataProviderListener> listeners(LISTENERS_COUNT);
 
 	std::for_each(listeners.begin(), listeners.end(), [&](auto&& listener)
-	{ dataProvider.subscribe(&listener, DATA_RAW); });
+	{ dataProvider.subscribe(&listener); });
 	sendNextPostRequest();
 	auto originalData = gsiPacketParser.parse(nlohmann::json::parse(bodySamples[0]));
 	for (auto& listener: listeners)
@@ -99,6 +99,6 @@ TEST_F(DataProviderTestListenerFixture, ShouldReceiveSampleOnAllListeners)
 
 TEST_F(DataProviderTestListenerFixture, ShouldHandleNullptrWithoutException)
 {
-	dataProvider.subscribe(nullptr, DATA_RAW);
+	dataProvider.subscribe(nullptr);
 	sendNextPostRequest();
 }

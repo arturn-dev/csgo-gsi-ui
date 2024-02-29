@@ -8,7 +8,7 @@ DataProvider::DataProvider(const std::string& host, int port) : _gsiServer(host,
 									  {
 										  auto data = _gsiServer.getNextDataOrWait();
 										  if (!data.empty())
-											  notify(nlohmann::json::parse(data), DATA_RAW);
+											  notify(nlohmann::json::parse(data));
 									  }
 								  });
 }
@@ -20,31 +20,28 @@ DataProvider::~DataProvider()
 	dataFetchThread.join();
 }
 
-void DataProvider::subscribe(IDataProviderListener* listener, DataType dataType)
+void DataProvider::subscribe(IDataProviderListener* listener)
 {
 	if (listener != nullptr)
-		listeners.emplace(dataType, listener);
+		listeners.insert(listener);
 }
 
 void DataProvider::unsubscribe(IDataProviderListener* listener)
 {
 	if (listener == nullptr) return;
 
-	auto predicate = [listener](const std::pair<DataType, IDataProviderListener*>& entry)
-	{ return entry.second == listener; };
-	auto foundEntryIt = std::find_if(listeners.begin(), listeners.end(), predicate);
+	auto foundEntryIt = std::find(listeners.begin(), listeners.end(), listener);
 	while (foundEntryIt != listeners.end())
 	{
 		auto nextIt = listeners.erase(foundEntryIt);
-		foundEntryIt = std::find_if(nextIt, listeners.end(), predicate);
+		foundEntryIt = std::find(nextIt, listeners.end(), listener);
 	}
 }
 
-void DataProvider::notify(const nlohmann::json& data, DataType dataType)
+void DataProvider::notify(const nlohmann::json& data)
 {
 	auto gameState = gsiPacketParser.parse(data);
-	auto bucketIndex = listeners.bucket(dataType);
-	std::for_each(listeners.begin(bucketIndex), listeners.end(bucketIndex),
+	std::for_each(listeners.begin(), listeners.end(),
 				  [&](auto& listener)
-				  { listener.second->update(gameState, dataType); });
+				  { listener->handleNewData(gameState); });
 }
