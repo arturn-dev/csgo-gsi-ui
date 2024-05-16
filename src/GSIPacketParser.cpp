@@ -5,7 +5,7 @@
 
 GSIPacketParser::GSIPacketParser()
 {
-	plog::init(plog::debug, &consoleAdapter);
+	plog::init(plog::debug, &consoleAppender);
 }
 
 template<typename T>

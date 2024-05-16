@@ -14,7 +14,7 @@
 
 class GSIPacketParser
 {
-	inline static plog::ColorConsoleAppender<plog::TxtFormatter> consoleAdapter{};
+	inline static plog::ColorConsoleAppender<plog::TxtFormatter> consoleAppender{};
 
 	template<typename T>
 	struct MapperTypeMap

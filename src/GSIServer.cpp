@@ -4,7 +4,7 @@
 
 GSIServer::GSIServer(const std::string& host, int port)
 {
-	plog::init(plog::debug, &consoleAdapter);
+	plog::init(plog::debug, &consoleAppender);
 
 	server.Post("/", [this](const httplib::Request& req, httplib::Response& res)
 	{
