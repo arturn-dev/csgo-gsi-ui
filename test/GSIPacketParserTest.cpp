@@ -304,8 +304,8 @@ TEST(GSIPacketParser, ShouldCorrectlyParseMapInfo)
 TEST(GSIPacketParser, ShouldCorrectlyParseProvider)
 {
 	GameState::Provider provider;
-	provider.name = "Counter-Strike: Global Offensive",
-			provider.appId = 730;
+	provider.name = "Counter-Strike: Global Offensive";
+	provider.appId = 730;
 	provider.version = 13831;
 	provider.steamId = "9999";
 	provider.timestamp = 1652817929;
@@ -321,7 +321,7 @@ TEST(GSIPacketParser, ShouldCorrectlyParseBombInfo)
 	GameState::BombInfo bombInfo;
 	bombInfo.bombState = GameState::BombInfo::CARRIED;
 	bombInfo.position = {807.02, 2491.80, 138.57};
-	bombInfo.countdown = INFINITY;
+	bombInfo.countdown = -1;
 
 	GameState gameState;
 	ASSERT_NO_FATAL_FAILURE(parseFileToGameState("../test/data/bomb_info.json", gameState));

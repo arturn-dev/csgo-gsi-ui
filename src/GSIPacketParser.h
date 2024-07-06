@@ -37,8 +37,6 @@ class GSIPacketParser
 	template<typename T>
 	T getMapping(const nlohmann::json& json);
 
-	int getOptionalInt(const nlohmann::json& json, const std::string& key);
-
 public:
 	GSIPacketParser();
 
