@@ -134,7 +134,12 @@ GameState::Provider GSIPacketParser::getMapping(const nlohmann::json& json)
 template<>
 GameState::Vec3 GSIPacketParser::getMapping(const nlohmann::json& json)
 {
-	double values[3] = {std::numeric_limits<double>::min()};
+	// Format considered valid is e.g.: "{12.34, 56.7, 89.0}"
+
+	double values[3] = {
+			std::numeric_limits<double>::min(),
+			std::numeric_limits<double>::min(),
+			std::numeric_limits<double>::min()};
 	if (!json.is_string())
 	{
 		return {values[0], values[1], values[2]};
@@ -166,7 +171,7 @@ GameState::Vec3 GSIPacketParser::getMapping(const nlohmann::json& json)
 	}
 	catch (std::exception& e)
 	{
-		LOG(plog::debug) << "Couldn't parse vec3: " << e.what();
+		LOG(plog::error) << "Couldn't parse vec3: " << e.what();
 	}
 
 	return {values[0], values[1], values[2]};

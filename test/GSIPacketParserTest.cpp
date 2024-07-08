@@ -328,3 +328,29 @@ TEST(GSIPacketParser, ShouldCorrectlyParseBombInfo)
 
 	ASSERT_NO_FATAL_FAILURE(assertBombInfo(bombInfo, gameState.getBombInfo()));
 }
+
+TEST(GSIPacketParser, ShouldCorrectlyParseBombInfoWithInvalidPosition)
+{
+	GameState::BombInfo bombInfo;
+	bombInfo.bombState = GameState::BombInfo::CARRIED;
+	bombInfo.position = {807.02, 2491.80, std::numeric_limits<double>::min()};
+	bombInfo.countdown = -1;
+
+	GameState gameState;
+	ASSERT_NO_FATAL_FAILURE(parseFileToGameState("../test/data/bomb_info_invalid_pos.json", gameState));
+
+	ASSERT_NO_FATAL_FAILURE(assertBombInfo(bombInfo, gameState.getBombInfo()));
+}
+
+TEST(GSIPacketParser, ShouldCorrectlyParseBombInfoWithInvalidPosition2)
+{
+	GameState::BombInfo bombInfo;
+	bombInfo.bombState = GameState::BombInfo::CARRIED;
+	bombInfo.position = {1.0, std::numeric_limits<double>::min(), std::numeric_limits<double>::min()};
+	bombInfo.countdown = -1;
+
+	GameState gameState;
+	ASSERT_NO_FATAL_FAILURE(parseFileToGameState("../test/data/bomb_info_invalid_pos2.json", gameState));
+
+	ASSERT_NO_FATAL_FAILURE(assertBombInfo(bombInfo, gameState.getBombInfo()));
+}
