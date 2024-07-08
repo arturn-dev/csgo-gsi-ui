@@ -8,7 +8,9 @@ DataProvider::DataProvider(const std::string& host, int port) : _gsiServer(host,
 									  {
 										  auto data = _gsiServer.getNextDataOrWait();
 										  if (!data.empty())
+										  {
 											  notify(nlohmann::json::parse(data));
+										  }
 									  }
 								  });
 }
@@ -23,12 +25,17 @@ DataProvider::~DataProvider()
 void DataProvider::subscribe(IDataProviderListener* listener)
 {
 	if (listener != nullptr)
+	{
 		listeners.insert(listener);
+	}
 }
 
 void DataProvider::unsubscribe(IDataProviderListener* listener)
 {
-	if (listener == nullptr) return;
+	if (listener == nullptr)
+	{
+		return;
+	}
 
 	auto foundEntryIt = std::find(listeners.begin(), listeners.end(), listener);
 	while (foundEntryIt != listeners.end())

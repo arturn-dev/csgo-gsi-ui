@@ -13,7 +13,7 @@ void GSIPacketParser::setValueFromJson(T& destination, const nlohmann::json& jso
 {
 	if (!json.contains(key))
 	{
-		LOG(plog::debug) << "Key '" << key << "' not parsed";
+		LOG(plog::debug) << "Key '" << key << "' not found";
 		return;
 	}
 
@@ -32,7 +32,7 @@ void GSIPacketParser::setMappedValueFromJson(T& destination, const nlohmann::jso
 {
 	if (!json.contains(key))
 	{
-		LOG(plog::debug) << "Key '" << key << "' not parsed";
+		LOG(plog::debug) << "Key '" << key << "' not found";
 		return;
 	}
 
@@ -50,7 +50,7 @@ std::vector<nlohmann::json> GSIPacketParser::getVectorFromJson(const nlohmann::j
 {
 	if (!json.contains(key))
 	{
-		LOG(plog::debug) << "Key '" << key << "' not parsed";
+		LOG(plog::debug) << "Key '" << key << "' not found";
 		return {};
 	}
 
@@ -58,7 +58,9 @@ std::vector<nlohmann::json> GSIPacketParser::getVectorFromJson(const nlohmann::j
 	{
 		const auto& jsonObject = json.at(key);
 		if (!jsonObject.is_object())
+		{
 			throw std::logic_error("Value under the key '" + key + "' is not a json object.");
+		}
 
 		std::vector<nlohmann::json> vRet;
 		for (const auto& entry: jsonObject.get<std::map<nlohmann::json, nlohmann::json>>())
@@ -82,8 +84,10 @@ GSIPacketParser::getMapFromJson(const nlohmann::json& json)
 	try
 	{
 		if (!json.is_object())
+		{
 			// TODO: Find out how to get a key for which the value is not an object to include to the error msg.
 			throw std::logic_error("Not a json object");
+		}
 		return json;
 	}
 	catch (const std::exception& e)
@@ -106,9 +110,12 @@ T GSIPacketParser::getMapping(const nlohmann::json& json)
 	auto mapper = MapperTypeMap<T>::mapper;
 	auto found = mapper.find(jsonValue);
 	if (found == mapper.end())
+	{
 		return mapper.at({});
-	else
+	} else
+	{
 		return mapper.at(jsonValue);
+	}
 }
 
 template<>
@@ -134,12 +141,32 @@ GameState::Vec3 GSIPacketParser::getMapping(const nlohmann::json& json)
 	}
 
 	auto valuesStr = json.get<std::string>();
-	auto commaPos = valuesStr.find(',');
-	for (double& value: values) // TODO: Hard-code to 3 iterations and do some checks
+	auto valueEndPos = valuesStr.find(',');
+	if (valueEndPos == std::string::npos)
 	{
-		value = std::stod(valuesStr.substr(0, commaPos));
-		valuesStr = valuesStr.substr(commaPos + 1);
-		commaPos = valuesStr.find(',');
+		return {values[0], values[1], values[2]};
+	}
+
+	try
+	{
+		size_t valueBeginPos = 0;
+		for (int i = 0; i < 3; i++)
+		{
+			values[i] = std::stod(valuesStr.substr(valueBeginPos, valueEndPos - valueBeginPos));
+			valueBeginPos = valueEndPos + 2;
+			if (i == 1)
+			{
+				// Next value should be last, so no comma to find
+				valueEndPos = valuesStr.size();
+			} else
+			{
+				valueEndPos = valuesStr.find(',', valueBeginPos);
+			}
+		}
+	}
+	catch (std::exception& e)
+	{
+		LOG(plog::debug) << "Couldn't parse vec3: " << e.what();
 	}
 
 	return {values[0], values[1], values[2]};
