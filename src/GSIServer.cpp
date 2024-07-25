@@ -2,9 +2,11 @@
 #include <plog/Init.h>
 #include <plog/Log.h>
 
+extern plog::Severity maxSev;
+
 GSIServer::GSIServer(const std::string& host, int port)
 {
-	plog::init(plog::debug, &consoleAppender);
+	plog::init(maxSev, &consoleAppender);
 
 	server.Post("/", [this](const httplib::Request& req, httplib::Response& res)
 	{

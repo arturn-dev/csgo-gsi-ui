@@ -3,9 +3,11 @@
 #include <plog/Init.h>
 #include <plog/Log.h>
 
+extern plog::Severity maxSev;
+
 GSIPacketParser::GSIPacketParser()
 {
-	plog::init(plog::debug, &consoleAppender);
+	plog::init(maxSev, &consoleAppender);
 }
 
 template<typename T>
