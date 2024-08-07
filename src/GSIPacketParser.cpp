@@ -391,7 +391,11 @@ const std::map<std::string, GameState::MapInfo::RoundWinCause> GSIPacketParser::
 
 template<>
 const std::map<std::string, GameState::BombInfo::BombState> GSIPacketParser::MapperTypeMap<GameState::BombInfo::BombState>::mapper = {
-		{"planted", GameState::BombInfo::PLANTED},
-		{"carried", GameState::BombInfo::CARRIED},
-		{{},        GameState::BombInfo::BOMB_STATE_UNKNOWN},
+		{"carried",  GameState::BombInfo::CARRIED},
+		{"dropped",  GameState::BombInfo::DROPPED},
+		{"planting", GameState::BombInfo::PLANTING},
+		{"planted",  GameState::BombInfo::PLANTED},
+		{"defusing", GameState::BombInfo::DEFUSING},
+		{"defused",  GameState::BombInfo::DEFUSED},
+		{{},         GameState::BombInfo::BOMB_STATE_UNKNOWN},
 };

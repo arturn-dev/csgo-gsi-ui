@@ -4,6 +4,7 @@
 UIInstance* UIController::addUi()
 {
 	uis.push_back(std::make_unique<UITerminal>());
+	uis.back()->init();
 	return uis.back().get();
 }
 

@@ -155,8 +155,12 @@ public:
 		enum BombState
 		{
 			BOMB_STATE_UNKNOWN,
+			CARRIED,
+			DROPPED,
+			PLANTING,
 			PLANTED,
-			CARRIED
+			DEFUSING,
+			DEFUSED
 		} bombState = BOMB_STATE_UNKNOWN;
 		Vec3 position;
 		double countdown = -1.0;
