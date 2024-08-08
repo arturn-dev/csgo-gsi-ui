@@ -27,17 +27,17 @@ void UITerminal::flush()
 
 void UITerminal::updateData(const GameState& gameState)
 {
-	print("=== Provider ===");
-	print("Name", gameState.getProvider().name);
-	print("Version", gameState.getProvider().version);
-	print("App ID", gameState.getProvider().appId);
-	print("Steam ID", gameState.getProvider().steamId);
-	print("Time", gameState.getProvider().timestamp);
-	print("================");
-	print("=== Game State ===");
-	print("Map", gameState.getMapInfo().name);
-	print("Round", gameState.getMapInfo().roundNo + 1);
-	print("Bomb", toString(gameState.getBombInfo().bombState), ' ');
+	append("=== Provider ===");
+	append("Name", gameState.getProvider().name);
+	append("Version", gameState.getProvider().version);
+	append("App ID", gameState.getProvider().appId);
+	append("Steam ID", gameState.getProvider().steamId);
+	append("Time", gameState.getProvider().timestamp);
+	append("================");
+	append("=== Game State ===");
+	append("Map", gameState.getMapInfo().name);
+	append("Round", gameState.getMapInfo().roundNo + 1);
+	append("Bomb", toString(gameState.getBombInfo().bombState), ' ');
 	if ((gameState.getBombInfo().bombState == GameState::BombInfo::PLANTED ||
 		 gameState.getBombInfo().bombState == GameState::BombInfo::PLANTING ||
 		 gameState.getBombInfo().bombState == GameState::BombInfo::DEFUSING) &&
@@ -45,20 +45,20 @@ void UITerminal::updateData(const GameState& gameState)
 	{
 		std::cout << "(" << std::fixed << std::setprecision(1) << gameState.getBombInfo().countdown << ")";
 	}
-	print();
-	print();
-	print("Terrorists");
-	print("\tScore", gameState.getMapInfo().tSideStats.score);
-	print("Counter-Terrorists");
-	print("\tScore", gameState.getMapInfo().ctSideStats.score);
-	print("==================");
+	append();
+	append();
+	append("Terrorists");
+	append("\tScore", gameState.getMapInfo().tSideStats.score);
+	append("Counter-Terrorists");
+	append("\tScore", gameState.getMapInfo().ctSideStats.score);
+	append("==================");
 
 	clearDisplay();
 	flush();
 	resetCursor();
 }
 
-void UITerminal::print(const std::string& str, const char end)
+void UITerminal::append(const std::string& str, const char end)
 {
 	output << str << end;
 	if (end == '\n')
@@ -68,7 +68,7 @@ void UITerminal::print(const std::string& str, const char end)
 }
 
 template<typename T>
-void UITerminal::print(const std::string& label, const T& value, const char end)
+void UITerminal::append(const std::string& label, const T& value, const char end)
 {
 	output << label << ": " << value << end;
 	if (end == '\n')

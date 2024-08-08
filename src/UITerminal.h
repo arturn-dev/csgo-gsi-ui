@@ -17,9 +17,9 @@ class UITerminal : public UIInstance
 	void flush();
 
 	template<typename T>
-	void print(const std::string& label, const T& value, const char end = '\n');
+	void append(const std::string& label, const T& value, const char end = '\n');
 
-	void print(const std::string& str = "", const char end = '\n');
+	void append(const std::string& str = "", const char end = '\n');
 
 	std::string toString(GameState::BombInfo::BombState enumValue);
 
