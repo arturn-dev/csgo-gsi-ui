@@ -2,6 +2,8 @@
 #include "../src/DataProvider.h"
 #include "GSIPacketParserTest.h"
 
+auto maxSev = plog::Severity::debug;
+
 class DataProviderTestListenerFixture
 		: public GSIClientFixture // TODO: It should be a unit test and GSIServer should be mocked
 {
