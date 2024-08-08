@@ -43,7 +43,7 @@ void UITerminal::updateData(const GameState& gameState)
 		 gameState.getBombInfo().bombState == GameState::BombInfo::DEFUSING) &&
 		gameState.getBombInfo().countdown >= 0)
 	{
-		std::cout << "(" << std::fixed << std::setprecision(1) << gameState.getBombInfo().countdown << ")";
+		output << "(" << std::fixed << std::setprecision(1) << gameState.getBombInfo().countdown << ")";
 	}
 	append();
 	append();
