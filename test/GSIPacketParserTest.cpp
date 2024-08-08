@@ -2,6 +2,8 @@
 #include "gtest/gtest.h"
 #include "gtest/gtest-printers.h"
 #include "../../src/GSIPacketParser.h"
+#include "GSIPacketParserTest.h"
+
 
 void assertVec3(const GameState::Vec3& lhs, const GameState::Vec3& rhs)
 {
@@ -99,6 +101,19 @@ void assertProvider(const GameState::Provider& lhs, const GameState::Provider& r
 	ASSERT_EQ(lhs.version, rhs.version);
 	ASSERT_EQ(lhs.steamId, rhs.steamId);
 	ASSERT_EQ(lhs.timestamp, rhs.timestamp);
+}
+
+void assertGameState(const GameState& lhs, const GameState& rhs)
+{
+	assertBombInfo(lhs.getBombInfo(), rhs.getBombInfo());
+	assertMapInfo(lhs.getMapInfo(), rhs.getMapInfo());
+	ASSERT_EQ(lhs.getPlayers().size(), rhs.getPlayers().size());
+	for (int i = 0; i < lhs.getPlayers().size(); ++i)
+	{
+		assertPlayer(lhs.getPlayers()[i], rhs.getPlayers()[i]);
+	}
+
+	assertProvider(lhs.getProvider(), rhs.getProvider());
 }
 
 GameState::Player
@@ -289,8 +304,8 @@ TEST(GSIPacketParser, ShouldCorrectlyParseMapInfo)
 TEST(GSIPacketParser, ShouldCorrectlyParseProvider)
 {
 	GameState::Provider provider;
-	provider.name = "Counter-Strike: Global Offensive",
-			provider.appId = 730;
+	provider.name = "Counter-Strike: Global Offensive";
+	provider.appId = 730;
 	provider.version = 13831;
 	provider.steamId = "9999";
 	provider.timestamp = 1652817929;
@@ -306,10 +321,36 @@ TEST(GSIPacketParser, ShouldCorrectlyParseBombInfo)
 	GameState::BombInfo bombInfo;
 	bombInfo.bombState = GameState::BombInfo::CARRIED;
 	bombInfo.position = {807.02, 2491.80, 138.57};
-	bombInfo.countdown = INFINITY;
+	bombInfo.countdown = -1;
 
 	GameState gameState;
 	ASSERT_NO_FATAL_FAILURE(parseFileToGameState("../test/data/bomb_info.json", gameState));
+
+	ASSERT_NO_FATAL_FAILURE(assertBombInfo(bombInfo, gameState.getBombInfo()));
+}
+
+TEST(GSIPacketParser, ShouldCorrectlyParseBombInfoWithInvalidPosition)
+{
+	GameState::BombInfo bombInfo;
+	bombInfo.bombState = GameState::BombInfo::CARRIED;
+	bombInfo.position = {807.02, 2491.80, std::numeric_limits<double>::min()};
+	bombInfo.countdown = -1;
+
+	GameState gameState;
+	ASSERT_NO_FATAL_FAILURE(parseFileToGameState("../test/data/bomb_info_invalid_pos.json", gameState));
+
+	ASSERT_NO_FATAL_FAILURE(assertBombInfo(bombInfo, gameState.getBombInfo()));
+}
+
+TEST(GSIPacketParser, ShouldCorrectlyParseBombInfoWithInvalidPosition2)
+{
+	GameState::BombInfo bombInfo;
+	bombInfo.bombState = GameState::BombInfo::CARRIED;
+	bombInfo.position = {1.0, std::numeric_limits<double>::min(), std::numeric_limits<double>::min()};
+	bombInfo.countdown = -1;
+
+	GameState gameState;
+	ASSERT_NO_FATAL_FAILURE(parseFileToGameState("../test/data/bomb_info_invalid_pos2.json", gameState));
 
 	ASSERT_NO_FATAL_FAILURE(assertBombInfo(bombInfo, gameState.getBombInfo()));
 }

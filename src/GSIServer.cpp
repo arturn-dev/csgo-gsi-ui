@@ -2,9 +2,11 @@
 #include <plog/Init.h>
 #include <plog/Log.h>
 
+extern plog::Severity maxSev;
+
 GSIServer::GSIServer(const std::string& host, int port)
 {
-	plog::init(plog::debug, &consoleAdapter);
+	plog::init(maxSev, &consoleAppender);
 
 	server.Post("/", [this](const httplib::Request& req, httplib::Response& res)
 	{
@@ -39,13 +41,17 @@ GSIServer::GSIServer(const std::string& host, int port)
 	}
 
 	if (server.is_running())
+	{
 		LOG(plog::info) << ("GSI server started. Listening on " + host + ":" + std::to_string(port));
+	}
 }
 
 GSIServer::~GSIServer()
 {
 	if (!isStopping)
+	{
 		stop();
+	}
 }
 
 void GSIServer::receiveData(const std::string& body)
@@ -54,24 +60,32 @@ void GSIServer::receiveData(const std::string& body)
 	{
 		std::lock_guard<std::mutex> lock(dataQueueMutex);
 		if (dataQueue.empty())
+		{
 			queueWasEmpty = true;
+		}
 		dataQueue.push(body);
 	}
 	if (queueWasEmpty)
+	{
 		cv.notify_one(); // notify a thread that waits for new data
+	}
 }
 
 std::string GSIServer::getNextDataOrWait()
 {
 	if (isStopping)
+	{
 		return "";
+	}
 
 	std::string ret;
 
 	std::unique_lock<std::mutex> lock(dataQueueMutex);
 	if (dataQueue.empty())
+	{
 		// No data available. Block current thread while waiting for new data.
 		cv.wait(lock);
+	}
 
 	if (!dataQueue.empty())
 	{
@@ -88,6 +102,8 @@ void GSIServer::stop()
 	LOG(plog::info) << "Stopping GSI server...";
 	cv.notify_all();
 	if (server.is_running())
+	{
 		server.stop();
+	}
 	listeningThread.join();
 }

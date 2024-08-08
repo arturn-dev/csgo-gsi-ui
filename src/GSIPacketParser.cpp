@@ -3,44 +3,66 @@
 #include <plog/Init.h>
 #include <plog/Log.h>
 
+extern plog::Severity maxSev;
+
 GSIPacketParser::GSIPacketParser()
 {
-	plog::init(plog::debug, &consoleAdapter);
+	plog::init(maxSev, &consoleAppender);
 }
 
 template<typename T>
 void GSIPacketParser::setValueFromJson(T& destination, const nlohmann::json& json, const std::string& key)
 {
+	if (!json.contains(key))
+	{
+		LOG(plog::debug) << "Key '" << key << "' not found";
+		return;
+	}
+
 	try
 	{
-		destination = json.at(key);
+		destination = json.value(key, destination);
 	}
-	catch (const nlohmann::json::out_of_range& e)
+	catch (std::exception& e)
 	{
-		LOG(plog::error) << "Parser error: " << e.what();
+		LOG(plog::error) << "Error getting a value under '" << key << "': " << e.what();
 	}
 }
 
 template<typename T>
 void GSIPacketParser::setMappedValueFromJson(T& destination, const nlohmann::json& json, const std::string& key)
 {
+	if (!json.contains(key))
+	{
+		LOG(plog::debug) << "Key '" << key << "' not found";
+		return;
+	}
+
 	try
 	{
 		destination = getMapping<T>(json.at(key));
 	}
-	catch (const nlohmann::json::out_of_range& e)
+	catch (std::exception& e)
 	{
-		LOG(plog::error) << "Parser error: " << e.what();
+		LOG(plog::error) << "Error getting a mapped value under '" << key << "': " << e.what();
 	}
 }
 
 std::vector<nlohmann::json> GSIPacketParser::getVectorFromJson(const nlohmann::json& json, const std::string& key)
 {
+	if (!json.contains(key))
+	{
+		LOG(plog::debug) << "Key '" << key << "' not found";
+		return {};
+	}
+
 	try
 	{
 		const auto& jsonObject = json.at(key);
 		if (!jsonObject.is_object())
+		{
 			throw std::logic_error("Value under the key '" + key + "' is not a json object.");
+		}
 
 		std::vector<nlohmann::json> vRet;
 		for (const auto& entry: jsonObject.get<std::map<nlohmann::json, nlohmann::json>>())
@@ -52,7 +74,7 @@ std::vector<nlohmann::json> GSIPacketParser::getVectorFromJson(const nlohmann::j
 	}
 	catch (const std::exception& e)
 	{
-		LOG(plog::error) << "Parser error: " << e.what();
+		LOG(plog::error) << "Error getting an object list under '" << key << "': " << e.what();
 	}
 
 	return {};
@@ -64,8 +86,10 @@ GSIPacketParser::getMapFromJson(const nlohmann::json& json)
 	try
 	{
 		if (!json.is_object())
+		{
 			// TODO: Find out how to get a key for which the value is not an object to include to the error msg.
 			throw std::logic_error("Not a json object");
+		}
 		return json;
 	}
 	catch (const std::exception& e)
@@ -79,13 +103,21 @@ GSIPacketParser::getMapFromJson(const nlohmann::json& json)
 template<typename T>
 T GSIPacketParser::getMapping(const nlohmann::json& json)
 {
-	auto jsonValue = json.get<std::string>();
+	std::string jsonValue;
+	if (json.is_string())
+	{
+		jsonValue = json.get<std::string>();
+	}
+
 	auto mapper = MapperTypeMap<T>::mapper;
 	auto found = mapper.find(jsonValue);
 	if (found == mapper.end())
+	{
 		return mapper.at({});
-	else
+	} else
+	{
 		return mapper.at(jsonValue);
+	}
 }
 
 template<>
@@ -104,14 +136,44 @@ GameState::Provider GSIPacketParser::getMapping(const nlohmann::json& json)
 template<>
 GameState::Vec3 GSIPacketParser::getMapping(const nlohmann::json& json)
 {
-	double values[3] = {0.0};
-	auto valuesStr = json.get<std::string>();
-	auto commaPos = valuesStr.find(',');
-	for (double& value: values)
+	// Format considered valid is e.g.: "{12.34, 56.7, 89.0}"
+
+	double values[3] = {
+			std::numeric_limits<double>::min(),
+			std::numeric_limits<double>::min(),
+			std::numeric_limits<double>::min()};
+	if (!json.is_string())
 	{
-		value = std::stod(valuesStr.substr(0, commaPos));
-		valuesStr = valuesStr.substr(commaPos + 1);
-		commaPos = valuesStr.find(',');
+		return {values[0], values[1], values[2]};
+	}
+
+	auto valuesStr = json.get<std::string>();
+	auto valueEndPos = valuesStr.find(',');
+	if (valueEndPos == std::string::npos)
+	{
+		return {values[0], values[1], values[2]};
+	}
+
+	try
+	{
+		size_t valueBeginPos = 0;
+		for (int i = 0; i < 3; i++)
+		{
+			values[i] = std::stod(valuesStr.substr(valueBeginPos, valueEndPos - valueBeginPos));
+			valueBeginPos = valueEndPos + 2;
+			if (i == 1)
+			{
+				// Next value should be last, so no comma to find
+				valueEndPos = valuesStr.size();
+			} else
+			{
+				valueEndPos = valuesStr.find(',', valueBeginPos);
+			}
+		}
+	}
+	catch (std::exception& e)
+	{
+		LOG(plog::error) << "Couldn't parse vec3: " << e.what();
 	}
 
 	return {values[0], values[1], values[2]};
@@ -160,9 +222,9 @@ GameState::Weapon GSIPacketParser::getMapping(const nlohmann::json& json)
 	setValueFromJson(weapon.paintKit, json, "paintkit");
 	setMappedValueFromJson(weapon.type, json, "type");
 	setMappedValueFromJson(weapon.state, json, "state");
-	weapon.ammoClip = getOptionalInt(json, "ammo_clip");
-	weapon.ammoClipMax = getOptionalInt(json, "ammo_clip_max");
-	weapon.ammoReserve = getOptionalInt(json, "ammo_reserve");
+	setValueFromJson(weapon.ammoClip, json, "ammo_clip");
+	setValueFromJson(weapon.ammoClipMax, json, "ammo_clip_max");
+	setValueFromJson(weapon.ammoReserve, json, "ammo_reserve");
 
 	return weapon;
 }
@@ -173,7 +235,7 @@ GameState::BombInfo GSIPacketParser::getMapping(const nlohmann::json& json)
 	GameState::BombInfo bombInfo;
 	setMappedValueFromJson(bombInfo.bombState, json, "state");
 	setMappedValueFromJson(bombInfo.position, json, "position");
-	setValueFromJson(bombInfo.countdown, json, "countdown");
+	setMappedValueFromJson(bombInfo.countdown, json, "countdown");
 
 	return bombInfo;
 }
@@ -182,23 +244,23 @@ template<>
 GameState::Player GSIPacketParser::getMapping(const nlohmann::json& json)
 {
 	GameState::Player player;
+	if (!json.is_object())
+	{
+		return player;
+	}
 
-	auto jsonKeyValue = static_cast<std::pair<nlohmann::json, nlohmann::json>>(json);
-	player.steamId = jsonKeyValue.first;
-	auto jsonObj = jsonKeyValue.second;
+	setValueFromJson(player.name, json, "name");
+	setValueFromJson(player.observerSlot, json, "observer_slot");
+	setMappedValueFromJson(player.team, json, "team");
+	setMappedValueFromJson(player.roundState, json, "state");
+	setMappedValueFromJson(player.matchStats, json, "match_stats");
 
-	setValueFromJson(player.name, jsonObj, "name");
-	setValueFromJson(player.observerSlot, jsonObj, "observer_slot");
-	setMappedValueFromJson(player.team, jsonObj, "team");
-	setMappedValueFromJson(player.roundState, jsonObj, "state");
-	setMappedValueFromJson(player.matchStats, jsonObj, "match_stats");
-
-	for (auto&& weapon: getVectorFromJson(jsonObj, "weapons"))
+	for (auto&& weapon: getVectorFromJson(json, "weapons"))
 		player.weapons.push_back(getMapping<GameState::Weapon>(weapon));
 
-	setValueFromJson(player.specTarget, jsonObj, "spectarget");
-	setMappedValueFromJson(player.position, jsonObj, "position");
-	setMappedValueFromJson(player.forward, jsonObj, "forward");
+	setValueFromJson(player.specTarget, json, "spectarget");
+	setMappedValueFromJson(player.position, json, "position");
+	setMappedValueFromJson(player.forward, json, "forward");
 
 	return player;
 }
@@ -208,9 +270,17 @@ GameState::PlayerList GSIPacketParser::getMapping(const nlohmann::json& json)
 {
 	GameState::PlayerList players;
 
-	for (auto&& p: getMapFromJson(json))
+	if (!json.is_object())
 	{
-		players.push_back(getMapping<GameState::Player>(p));
+		PLOG(plog::error) << "No object under 'allplayers' key";
+		return players;
+	}
+
+	for (auto it = json.begin(); it != json.end(); it++)
+	{
+		auto player = getMapping<GameState::Player>(it.value());
+		player.steamId = it.key();
+		players.push_back(std::move(player));
 	}
 
 	return players;
@@ -254,15 +324,6 @@ template<>
 double GSIPacketParser::getMapping(const nlohmann::json& json)
 {
 	return std::stod(json.get<std::string>());
-}
-
-int GSIPacketParser::getOptionalInt(const nlohmann::json& json, const std::string& key)
-{
-	auto found = json.find(key);
-	if (found == json.end())
-		return -1;
-	else
-		return found.value();
 }
 
 GameState GSIPacketParser::parse(nlohmann::json json)
@@ -330,7 +391,11 @@ const std::map<std::string, GameState::MapInfo::RoundWinCause> GSIPacketParser::
 
 template<>
 const std::map<std::string, GameState::BombInfo::BombState> GSIPacketParser::MapperTypeMap<GameState::BombInfo::BombState>::mapper = {
-		{"planted", GameState::BombInfo::PLANTED},
-		{"carried", GameState::BombInfo::CARRIED},
-		{{},        GameState::BombInfo::BOMB_STATE_UNKNOWN},
+		{"carried",  GameState::BombInfo::CARRIED},
+		{"dropped",  GameState::BombInfo::DROPPED},
+		{"planting", GameState::BombInfo::PLANTING},
+		{"planted",  GameState::BombInfo::PLANTED},
+		{"defusing", GameState::BombInfo::DEFUSING},
+		{"defused",  GameState::BombInfo::DEFUSED},
+		{{},         GameState::BombInfo::BOMB_STATE_UNKNOWN},
 };

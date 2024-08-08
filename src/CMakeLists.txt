@@ -16,7 +16,7 @@ add_executable(${PROJECT_NAME} ${HEADER_FILES} ${SOURCE_FILES})
 if (MSVC)
     target_compile_options(${PROJECT_NAME} PRIVATE /W4 /WX)
 else ()
-    target_compile_options(${PROJECT_NAME} PRIVATE -Wall -Wextra -pedantic -Werror)
+    target_compile_options(${PROJECT_NAME} PRIVATE -Wall -Wextra -pedantic -Werror -Wno-unused-parameter)
 endif ()
 
 # Define the include DIRs

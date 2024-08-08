@@ -11,10 +11,10 @@ public:
 	struct Provider
 	{
 		std::string name;
-		unsigned long appId;
-		unsigned long version;
+		unsigned long appId = 0;
+		unsigned long version = 0;
 		std::string steamId;
-		unsigned long timestamp;
+		unsigned long timestamp = 0;
 	};
 
 	enum Side
@@ -38,9 +38,8 @@ public:
 			GRENADE,
 			C4,
 			SNIPER_RIFLE
-		} type;
+		} type = WEAPON_TYPE_UNKNOWN;
 
-		// optional values (-1 if undefined)
 		int ammoClip = -1;
 		int ammoClipMax = -1;
 		int ammoReserve = -1;
@@ -50,47 +49,47 @@ public:
 			WEAPON_STATE_UNKNOWN,
 			HOLSTERED,
 			ACTIVE
-		} state;
+		} state = WEAPON_STATE_UNKNOWN;
 	};
 
 	struct Vec3
 	{
-		double x, y, z;
+		double x = 0.0, y = 0.0, z = 0.0;
 	};
 
 	struct Player
 	{
 		std::string steamId;
 		std::string name;
-		unsigned int observerSlot;
-		Side team;
+		unsigned int observerSlot = std::numeric_limits<unsigned int>::max();
+		Side team = SIDE_UNKNOWN;
 
 		struct RoundState
 		{
-			int health;
-			int armor;
-			bool helmet;
-			int flashed;
-			int smoked = -1; // Only for currently spectated player, otherwise: -1
-			int burning;
-			int money;
-			int kills;
-			int killHeadshots;
-			int totalDamage;
-			int equipmentValue;
+			int health = -1;
+			int armor = -1;
+			bool helmet = false;
+			int flashed = -1;
+			int smoked = -1; // Valid only for currently spectated player, otherwise: -1
+			int burning = -1;
+			int money = -1;
+			int kills = std::numeric_limits<unsigned int>::min();
+			int killHeadshots = -1;
+			int totalDamage = -1;
+			int equipmentValue = -1;
 		} roundState;
 
 		struct MatchStats
 		{
-			int kills;
-			int assists;
-			int deaths;
-			int mvps;
-			int score;
+			int kills = std::numeric_limits<unsigned int>::min();
+			int assists = std::numeric_limits<unsigned int>::min();
+			int deaths = -1;
+			int mvps = -1;
+			int score = std::numeric_limits<unsigned int>::min();
 		} matchStats;
 
 		std::vector<Weapon> weapons;
-		std::string specTarget;
+		std::string specTarget; // Valid only for currently spectated player, otherwise empty
 		Vec3 position;
 		Vec3 forward;
 	};
@@ -109,16 +108,19 @@ public:
 		{
 			MAP_MODE_UNKNOWN,
 			COMPETITIVE
-		} mode;
+		} mode = MAP_MODE_UNKNOWN;
 
 		std::string name;
 
-		GamePhase phase;
+		GamePhase phase = GAME_PHASE_UNKNOWN;
 
-		int roundNo;
+		int roundNo = -1;
 
 		struct SideStats
 		{
+			SideStats() : side(SIDE_UNKNOWN)
+			{}
+
 			explicit SideStats(const Side side) : side(side)
 			{}
 
@@ -127,15 +129,15 @@ public:
 			SideStats& operator=(const SideStats& other);
 
 			const Side side;
-			int score{};
-			int consecutiveRoundLosses{};
-			int timeoutsRemaining{};
-			int matchesWonThisSeries{};
+			int score = -1;
+			int consecutiveRoundLosses = -1;
+			int timeoutsRemaining = -1;
+			int matchesWonThisSeries = -1;
 		} ctSideStats{CT_SIDE}, tSideStats{T_SIDE};
 
-		int numberOfMatchesToWinSeries;
-		int currentSpectatorsCount;
-		int souvenirsTotal;
+		int numberOfMatchesToWinSeries = -1;
+		int currentSpectatorsCount = -1;
+		int souvenirsTotal = -1;
 
 		enum RoundWinCause
 		{
@@ -153,12 +155,18 @@ public:
 		enum BombState
 		{
 			BOMB_STATE_UNKNOWN,
+			CARRIED,
+			DROPPED,
+			PLANTING,
 			PLANTED,
-			CARRIED
-		} bombState;
+			DEFUSING,
+			DEFUSED
+		} bombState = BOMB_STATE_UNKNOWN;
 		Vec3 position;
-		double countdown = INFINITY;
+		double countdown = -1.0;
 	};
+
+	//enum Phase
 
 private:
 	Provider provider;

@@ -22,7 +22,7 @@ class GSIServer
 
 	std::atomic_bool isStopping = false;
 
-	inline static plog::ColorConsoleAppender<plog::TxtFormatter> consoleAdapter{};
+	inline static plog::ColorConsoleAppender<plog::TxtFormatter> consoleAppender{};
 
 public:
 	GSIServer(const std::string& host, int port);

@@ -1,55 +1,28 @@
 #include <iostream>
 
-#include "GSIServer.h"
+#include "DataProvider.h"
+#include "UIController.h"
+
+#include <plog/Log.h>
 
 using std::cin;
 using std::cout;
 
-int main()
+auto maxSev = plog::Severity::debug;
+
+int main(int argc, char** argv)
 {
-	cout << "Starting the server...\n";
-	GSIServer server("127.0.0.1", 3000);
-	cout << "Server started!\n";
-
-	bool end = false;
-
-	while (!end)
+	if (argc == 2)
 	{
-		cout << "### Choose what to do:\n";
-		cout << "### \t1. Get next data\n";
-		cout << "### \t2. Finish\n";
-
-		int c;
-		cin >> c;
-		switch (c)
-		{
-			case 1:
-			{
-				std::string data = server.getNextDataOrWait();
-				if (data.empty())
-				{
-					cout << "No data available.\n";
-				} else
-				{
-					cout << "=== DATA START ===\n";
-					cout << data << '\n';
-					cout << "=== DATA END ===\n";
-				}
-			}
-				break;
-			case 2:
-			{
-				end = true;
-			}
-				break;
-			default:
-			{
-				cout << "Unknown action.\n";
-			}
-		}
-		cin.get();
+		maxSev = plog::severityFromString(argv[1]);
 	}
 
-	cout << "Shutting down the server...\n";
+	DataProvider dataProvider("127.0.0.1", 3000);
+	UIController uiController;
+	dataProvider.subscribe(&uiController);
+	uiController.addUi();
+
+	cin.get();
+
 	return 0;
 }

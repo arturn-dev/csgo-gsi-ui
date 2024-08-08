@@ -1,7 +1,11 @@
 #include "shared/GSIClientFixture.h"
 #include "../src/DataProvider.h"
+#include "GSIPacketParserTest.h"
 
-class DataProviderTestListenerFixture : public GSIClientFixture
+auto maxSev = plog::Severity::debug;
+
+class DataProviderTestListenerFixture
+		: public GSIClientFixture // TODO: It should be a unit test and GSIServer should be mocked
 {
 protected:
 	void SetUp() override
@@ -15,16 +19,17 @@ protected:
 	}
 
 	DataProvider dataProvider = DataProvider("127.0.0.1", port);
+	GSIPacketParser gsiPacketParser;
 };
 
 struct DataProviderListener : public IDataProviderListener
 {
-	nlohmann::json data;
+	GameState data;
 	std::atomic_bool updateInvoked = false;
 	std::condition_variable cv;
 	std::mutex m;
 
-	void update(const nlohmann::json& data, DataType dataType) override
+	void handleNewData(const GameState& data) override
 	{
 		updateInvoked = false;
 		this->data = data;
@@ -51,15 +56,15 @@ TEST_F(DataProviderTestListenerFixture, ShouldReceiveAllData)
 {
 	DataProviderListener dataProviderListener;
 
-	dataProvider.subscribe(&dataProviderListener, DATA_RAW);
+	dataProvider.subscribe(&dataProviderListener);
 
 	for (int i = 0; i < bodySamples.size(); i++)
 	{
 		sendNextPostRequest();
 		dataProviderListener.waitForUpdate();
 
-		auto originalData = nlohmann::json::parse(bodySamples[i]);
-		ASSERT_EQ(dataProviderListener.data, originalData);
+		auto originalData = gsiPacketParser.parse(nlohmann::json::parse(bodySamples[i]));
+		assertGameState(dataProviderListener.data, originalData);
 	}
 }
 
@@ -67,15 +72,15 @@ TEST_F(DataProviderTestListenerFixture, ShouldReceiveOnlyFirstSample)
 {
 	DataProviderListener dataProviderListener;
 
-	dataProvider.subscribe(&dataProviderListener, DATA_RAW);
+	dataProvider.subscribe(&dataProviderListener);
 
 	sendNextPostRequest();
 	dataProviderListener.waitForUpdate();
 	dataProvider.unsubscribe(&dataProviderListener);
 	sendNextPostRequest();
 
-	auto originalData = nlohmann::json::parse(bodySamples[0]);
-	ASSERT_EQ(dataProviderListener.data, originalData);
+	auto originalData = gsiPacketParser.parse(nlohmann::json::parse(bodySamples[0]));
+	assertGameState(dataProviderListener.data, originalData);
 }
 
 TEST_F(DataProviderTestListenerFixture, ShouldReceiveSampleOnAllListeners)
@@ -84,18 +89,18 @@ TEST_F(DataProviderTestListenerFixture, ShouldReceiveSampleOnAllListeners)
 	std::vector<DataProviderListener> listeners(LISTENERS_COUNT);
 
 	std::for_each(listeners.begin(), listeners.end(), [&](auto&& listener)
-	{ dataProvider.subscribe(&listener, DATA_RAW); });
+	{ dataProvider.subscribe(&listener); });
 	sendNextPostRequest();
-	auto originalData = nlohmann::json::parse(bodySamples[0]);
+	auto originalData = gsiPacketParser.parse(nlohmann::json::parse(bodySamples[0]));
 	for (auto& listener: listeners)
 	{
 		listener.waitForUpdate();
-		ASSERT_EQ(listener.data, originalData);
+		assertGameState(listener.data, originalData);
 	}
 }
 
 TEST_F(DataProviderTestListenerFixture, ShouldHandleNullptrWithoutException)
 {
-	dataProvider.subscribe(nullptr, DATA_RAW);
+	dataProvider.subscribe(nullptr);
 	sendNextPostRequest();
 }
