@@ -32,7 +32,7 @@ void assertMapInfo(const GameState::MapInfo& lhs, const GameState::MapInfo& rhs)
 {
 	ASSERT_EQ(lhs.mode, rhs.mode);
 	ASSERT_EQ(lhs.name, rhs.name);
-	ASSERT_EQ(lhs.phase, rhs.phase);
+	ASSERT_EQ(lhs.mapPhase, rhs.mapPhase);
 	ASSERT_EQ(lhs.roundNo, rhs.roundNo);
 	ASSERT_NO_FATAL_FAILURE(assertSideStats(lhs.ctSideStats, rhs.ctSideStats));
 	ASSERT_NO_FATAL_FAILURE(assertSideStats(lhs.tSideStats, rhs.tSideStats));
@@ -103,6 +103,13 @@ void assertProvider(const GameState::Provider& lhs, const GameState::Provider& r
 	ASSERT_EQ(lhs.timestamp, rhs.timestamp);
 }
 
+void assertRoundInfo(const GameState::RoundInfo& lhs, const GameState::RoundInfo& rhs)
+{
+	ASSERT_EQ(lhs.winningSide, rhs.winningSide);
+	ASSERT_EQ(lhs.phase, rhs.phase);
+	ASSERT_EQ(lhs.phaseCountdown, rhs.phaseCountdown);
+}
+
 void assertGameState(const GameState& lhs, const GameState& rhs)
 {
 	assertBombInfo(lhs.getBombInfo(), rhs.getBombInfo());
@@ -114,6 +121,7 @@ void assertGameState(const GameState& lhs, const GameState& rhs)
 	}
 
 	assertProvider(lhs.getProvider(), rhs.getProvider());
+	assertRoundInfo(lhs.getRoundInfo(), rhs.getRoundInfo());
 }
 
 GameState::Player
@@ -266,7 +274,7 @@ TEST(GSIPacketParser, ShouldCorrectlyParseMapInfo)
 	GameState::MapInfo mapInfo;
 	mapInfo.mode = GameState::MapInfo::COMPETITIVE;
 	mapInfo.name = "de_inferno";
-	mapInfo.phase = GameState::LIVE;
+	mapInfo.mapPhase = GameState::MapInfo::MapPhase::LIVE;
 	mapInfo.roundNo = 9;
 	mapInfo.numberOfMatchesToWinSeries = 0;
 	mapInfo.currentSpectatorsCount = 1;
@@ -321,10 +329,34 @@ TEST(GSIPacketParser, ShouldCorrectlyParseBombInfo)
 	GameState::BombInfo bombInfo;
 	bombInfo.bombState = GameState::BombInfo::CARRIED;
 	bombInfo.position = {807.02, 2491.80, 138.57};
-	bombInfo.countdown = -1;
 
 	GameState gameState;
 	ASSERT_NO_FATAL_FAILURE(parseFileToGameState("../test/data/bomb_info.json", gameState));
+
+	ASSERT_NO_FATAL_FAILURE(assertBombInfo(bombInfo, gameState.getBombInfo()));
+}
+
+TEST(GSIPacketParser, ShouldCorrectlyParseBombInfoWithCountdown)
+{
+	GameState::BombInfo bombInfo;
+	bombInfo.bombState = GameState::BombInfo::PLANTED;
+	bombInfo.position = {807.02, 2491.80, 138.57};
+	bombInfo.countdown = 12.5;
+
+	GameState gameState;
+	ASSERT_NO_FATAL_FAILURE(parseFileToGameState("../test/data/bomb_info_countdown.json", gameState));
+
+	ASSERT_NO_FATAL_FAILURE(assertBombInfo(bombInfo, gameState.getBombInfo()));
+}
+
+TEST(GSIPacketParser, ShouldCorrectlyParseBombInfoExploded)
+{
+	GameState::BombInfo bombInfo;
+	bombInfo.bombState = GameState::BombInfo::EXPLODED;
+	bombInfo.position = {807.02, 2491.80, 138.57};
+
+	GameState gameState;
+	ASSERT_NO_FATAL_FAILURE(parseFileToGameState("../test/data/bomb_info_exploded.json", gameState));
 
 	ASSERT_NO_FATAL_FAILURE(assertBombInfo(bombInfo, gameState.getBombInfo()));
 }
@@ -353,4 +385,29 @@ TEST(GSIPacketParser, ShouldCorrectlyParseBombInfoWithInvalidPosition2)
 	ASSERT_NO_FATAL_FAILURE(parseFileToGameState("../test/data/bomb_info_invalid_pos2.json", gameState));
 
 	ASSERT_NO_FATAL_FAILURE(assertBombInfo(bombInfo, gameState.getBombInfo()));
+}
+
+TEST(GSIPacketParser, ShouldCorrectlyParseRoundInfo)
+{
+	GameState::RoundInfo roundInfo;
+	roundInfo.phase = GameState::RoundInfo::LIVE;
+	roundInfo.phaseCountdown = 50.2;
+
+	GameState gameState;
+	ASSERT_NO_FATAL_FAILURE(parseFileToGameState("../test/data/round_info.json", gameState));
+
+	ASSERT_NO_FATAL_FAILURE(assertRoundInfo(roundInfo, gameState.getRoundInfo()));
+}
+
+TEST(GSIPacketParser, ShouldCorrectlyParseRoundInfoOver)
+{
+	GameState::RoundInfo roundInfo;
+	roundInfo.phase = GameState::RoundInfo::OVER;
+	roundInfo.phaseCountdown = -4.8;
+	roundInfo.winningSide = GameState::T_SIDE;
+
+	GameState gameState;
+	ASSERT_NO_FATAL_FAILURE(parseFileToGameState("../test/data/round_info_over.json", gameState));
+
+	ASSERT_NO_FATAL_FAILURE(assertRoundInfo(roundInfo, gameState.getRoundInfo()));
 }

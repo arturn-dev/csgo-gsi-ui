@@ -190,7 +190,7 @@ GameState::MapInfo GSIPacketParser::getMapping(const nlohmann::json& json)
 
 	setMappedValueFromJson(mapInfo.mode, json, "mode");
 	setValueFromJson(mapInfo.name, json, "name");
-	setMappedValueFromJson(mapInfo.phase, json, "phase");
+	setMappedValueFromJson(mapInfo.mapPhase, json, "phase");
 	setValueFromJson(mapInfo.roundNo, json, "round");
 	setMappedValueFromJson(mapInfo.ctSideStats, json, "team_ct");
 	setMappedValueFromJson(mapInfo.tSideStats, json, "team_t");
@@ -321,6 +321,17 @@ GameState::Player::MatchStats GSIPacketParser::getMapping(const nlohmann::json& 
 }
 
 template<>
+GameState::RoundInfo GSIPacketParser::getMapping(const nlohmann::json& json)
+{
+	GameState::RoundInfo roundInfo;
+
+	setMappedValueFromJson(roundInfo.phase, json, "phase");
+	setMappedValueFromJson(roundInfo.winningSide, json, "win_team");
+
+	return roundInfo;
+}
+
+template<>
 double GSIPacketParser::getMapping(const nlohmann::json& json)
 {
 	return std::stod(json.get<std::string>());
@@ -331,14 +342,26 @@ GameState GSIPacketParser::parse(nlohmann::json json)
 	GameState::Provider provider;
 	GameState::MapInfo mapInfo;
 	GameState::BombInfo bombInfo;
+	GameState::RoundInfo roundInfo;
 	GameState::PlayerList players;
 
 	setMappedValueFromJson(provider, json, "provider");
 	setMappedValueFromJson(mapInfo, json, "map");
 	setMappedValueFromJson(bombInfo, json, "bomb");
+	setMappedValueFromJson(roundInfo, json, "round");
 	setMappedValueFromJson(players, json, "allplayers");
 
-	return {provider, mapInfo, players, bombInfo};
+
+	// Store countdown together with all round information
+	if (json.contains("phase_countdowns"))
+	{
+		setMappedValueFromJson(roundInfo.phaseCountdown, json.at("phase_countdowns"), "phase_ends_in");
+	} else
+	{
+		LOG(plog::debug) << "Key 'phase_countdowns' not found";
+	}
+
+	return {provider, mapInfo, players, bombInfo, roundInfo};
 }
 
 // Mappings of strings from json to enum types (GameState class)
@@ -369,9 +392,11 @@ const std::map<std::string, GameState::Weapon::State> GSIPacketParser::MapperTyp
 };
 
 template<>
-const std::map<std::string, GameState::GamePhase> GSIPacketParser::MapperTypeMap<GameState::GamePhase>::mapper = {
-		{"live", GameState::GamePhase::LIVE},
-		{{},     GameState::GamePhase::GAME_PHASE_UNKNOWN},
+const std::map<std::string, GameState::RoundInfo::RoundPhase> GSIPacketParser::MapperTypeMap<GameState::RoundInfo::RoundPhase>::mapper = {
+		{"live",       GameState::RoundInfo::RoundPhase::LIVE},
+		{"over",       GameState::RoundInfo::RoundPhase::OVER},
+		{"freezetime", GameState::RoundInfo::RoundPhase::FREEZE_TIME},
+		{{},           GameState::RoundInfo::RoundPhase::ROUND_PHASE_UNKNOWN},
 };
 
 template<>
@@ -397,5 +422,14 @@ const std::map<std::string, GameState::BombInfo::BombState> GSIPacketParser::Map
 		{"planted",  GameState::BombInfo::PLANTED},
 		{"defusing", GameState::BombInfo::DEFUSING},
 		{"defused",  GameState::BombInfo::DEFUSED},
+		{"exploded", GameState::BombInfo::EXPLODED},
 		{{},         GameState::BombInfo::BOMB_STATE_UNKNOWN},
+};
+
+template<>
+const std::map<std::string, GameState::MapInfo::MapPhase> GSIPacketParser::MapperTypeMap<GameState::MapInfo::MapPhase>::mapper = {
+		{"warmup",       GameState::MapInfo::WARMUP},
+		{"live",         GameState::MapInfo::LIVE},
+		{"intermission", GameState::MapInfo::INTERMISSION},
+		{{},             GameState::MapInfo::MAP_PHASE_UNKNOWN},
 };

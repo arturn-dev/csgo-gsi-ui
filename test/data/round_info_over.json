@@ -1,0 +1,11 @@
+{
+  "round": {
+    "phase": "over",
+    "win_team": "T",
+    "bomb": "exploded"
+  },
+  "phase_countdowns": {
+    "phase": "over",
+    "phase_ends_in": "-4.8"
+  }
+}

@@ -96,11 +96,6 @@ public:
 
 	typedef std::vector<GameState::Player> PlayerList;
 
-	enum GamePhase
-	{
-		GAME_PHASE_UNKNOWN,
-		LIVE
-	};
 
 	struct MapInfo
 	{
@@ -110,9 +105,15 @@ public:
 			COMPETITIVE
 		} mode = MAP_MODE_UNKNOWN;
 
-		std::string name;
+		enum MapPhase
+		{
+			MAP_PHASE_UNKNOWN,
+			WARMUP,
+			LIVE,
+			INTERMISSION
+		} mapPhase = MAP_PHASE_UNKNOWN;
 
-		GamePhase phase = GAME_PHASE_UNKNOWN;
+		std::string name;
 
 		int roundNo = -1;
 
@@ -160,10 +161,26 @@ public:
 			PLANTING,
 			PLANTED,
 			DEFUSING,
-			DEFUSED
+			DEFUSED,
+			EXPLODED
 		} bombState = BOMB_STATE_UNKNOWN;
 		Vec3 position;
 		double countdown = -1.0;
+	};
+
+	struct RoundInfo
+	{
+		enum RoundPhase
+		{
+			ROUND_PHASE_UNKNOWN,
+			LIVE,
+			OVER,
+			FREEZE_TIME
+		};
+
+		RoundPhase phase = ROUND_PHASE_UNKNOWN;
+		double phaseCountdown = std::numeric_limits<double>::min();
+		Side winningSide = SIDE_UNKNOWN;
 	};
 
 	//enum Phase
@@ -174,16 +191,18 @@ private:
 	MapInfo mapInfo;
 	PlayerList players;
 	BombInfo bombInfo;
-	// TODO: grenades, round?, phase_countdown?
+	RoundInfo roundInfo;
+	// TODO: grenades?
 
 public:
 	GameState() = default;
 
 	GameState(Provider provider, MapInfo mapInfo,
-			  PlayerList players, BombInfo bombInfo) : provider(std::move(provider)),
-													   mapInfo(std::move(mapInfo)),
-													   players(std::move(players)),
-													   bombInfo(bombInfo)
+			  PlayerList players, BombInfo bombInfo,
+			  RoundInfo roundInfo) : provider(std::move(provider)),
+									 mapInfo(std::move(mapInfo)),
+									 players(std::move(players)),
+									 bombInfo(bombInfo), roundInfo(roundInfo)
 	{}
 
 	const Provider& getProvider() const
@@ -204,6 +223,11 @@ public:
 	const BombInfo& getBombInfo() const
 	{
 		return bombInfo;
+	}
+
+	const RoundInfo& getRoundInfo() const
+	{
+		return roundInfo;
 	}
 };
 
