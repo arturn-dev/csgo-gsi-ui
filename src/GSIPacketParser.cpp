@@ -249,7 +249,13 @@ GameState::Player GSIPacketParser::getMapping(const nlohmann::json& json)
 		return player;
 	}
 
+	if (json.contains("steamid"))
+	{
+		setValueFromJson(player.steamId, json, "steamid");
+	}
+
 	setValueFromJson(player.name, json, "name");
+	setValueFromJson(player.clan, json, "clan");
 	setValueFromJson(player.observerSlot, json, "observer_slot");
 	setMappedValueFromJson(player.team, json, "team");
 	setMappedValueFromJson(player.roundState, json, "state");
@@ -258,9 +264,19 @@ GameState::Player GSIPacketParser::getMapping(const nlohmann::json& json)
 	for (auto&& weapon: getVectorFromJson(json, "weapons"))
 		player.weapons.push_back(getMapping<GameState::Weapon>(weapon));
 
-	setValueFromJson(player.specTarget, json, "spectarget");
 	setMappedValueFromJson(player.position, json, "position");
 	setMappedValueFromJson(player.forward, json, "forward");
+	setMappedValueFromJson(player.activity, json, "activity");
+
+	if (json.contains("spectarget"))
+	{
+		std::string specTarget;
+		setValueFromJson(specTarget, json, "spectarget");
+		if (specTarget == player.steamId)
+		{
+			player.isSpectated = true;
+		}
+	}
 
 	return player;
 }
@@ -344,13 +360,30 @@ GameState GSIPacketParser::parse(nlohmann::json json)
 	GameState::BombInfo bombInfo;
 	GameState::RoundInfo roundInfo;
 	GameState::PlayerList players;
+	GameState::Player player;
 
 	setMappedValueFromJson(provider, json, "provider");
 	setMappedValueFromJson(mapInfo, json, "map");
 	setMappedValueFromJson(bombInfo, json, "bomb");
 	setMappedValueFromJson(roundInfo, json, "round");
 	setMappedValueFromJson(players, json, "allplayers");
+	setMappedValueFromJson(player, json, "player");
 
+	// Update a player in "players" that is being spectated
+	if (player.isSpectated)
+	{
+		auto spectatedPlayerIt = std::find_if(
+				players.begin(), players.end(), [&player](const auto& p)
+				{
+					return p.steamId == player.steamId;
+				});
+
+		if (spectatedPlayerIt != players.end())
+		{
+			spectatedPlayerIt->isSpectated = true;
+			spectatedPlayerIt->activity = player.activity;
+		}
+	}
 
 	// Store countdown together with all round information
 	if (json.contains("phase_countdowns"))
@@ -359,6 +392,22 @@ GameState GSIPacketParser::parse(nlohmann::json json)
 	} else
 	{
 		LOG(plog::debug) << "Key 'phase_countdowns' not found";
+	}
+
+	// Set the player pointer to a player that interacts with the bomb
+	if (json.contains("bomb") && json.at("bomb").contains("player"))
+	{
+		std::string playerSteamid;
+		setValueFromJson(playerSteamid, json.at("bomb"), "player");
+		auto playerBomb = std::find_if(
+				players.begin(), players.end(), [&playerSteamid](auto& player)
+				{
+					return player.steamId == playerSteamid;
+				});
+		if (playerBomb != players.end())
+		{
+			bombInfo.player = &*playerBomb;
+		}
 	}
 
 	return {provider, mapInfo, players, bombInfo, roundInfo};
@@ -375,13 +424,14 @@ const std::map<std::string, GameState::Side> GSIPacketParser::MapperTypeMap<Game
 
 template<>
 const std::map<std::string, GameState::Weapon::Type> GSIPacketParser::MapperTypeMap<GameState::Weapon::Type>::mapper = {
-		{"Knife",       GameState::Weapon::KNIFE},
-		{"Pistol",      GameState::Weapon::PISTOL},
-		{"Rifle",       GameState::Weapon::RIFLE},
-		{"Grenade",     GameState::Weapon::GRENADE},
-		{"SniperRifle", GameState::Weapon::SNIPER_RIFLE},
-		{"C4",          GameState::Weapon::C4},
-		{{},            GameState::Weapon::WEAPON_TYPE_UNKNOWN}
+		{"Knife",          GameState::Weapon::KNIFE},
+		{"Pistol",         GameState::Weapon::PISTOL},
+		{"Rifle",          GameState::Weapon::RIFLE},
+		{"Grenade",        GameState::Weapon::GRENADE},
+		{"SniperRifle",    GameState::Weapon::SNIPER_RIFLE},
+		{"C4",             GameState::Weapon::C4},
+		{"Submachine Gun", GameState::Weapon::SUBMACHINE_GUN},
+		{{},               GameState::Weapon::WEAPON_TYPE_UNKNOWN}
 };
 
 template<>
@@ -402,6 +452,8 @@ const std::map<std::string, GameState::RoundInfo::RoundPhase> GSIPacketParser::M
 template<>
 const std::map<std::string, GameState::MapInfo::Mode> GSIPacketParser::MapperTypeMap<GameState::MapInfo::Mode>::mapper = {
 		{"competitive", GameState::MapInfo::COMPETITIVE},
+		{"casual",      GameState::MapInfo::CASUAL},
+		{"deathmatch",  GameState::MapInfo::DEATHMATCH},
 		{{},            GameState::MapInfo::MAP_MODE_UNKNOWN},
 };
 
@@ -432,4 +484,12 @@ const std::map<std::string, GameState::MapInfo::MapPhase> GSIPacketParser::Mappe
 		{"live",         GameState::MapInfo::LIVE},
 		{"intermission", GameState::MapInfo::INTERMISSION},
 		{{},             GameState::MapInfo::MAP_PHASE_UNKNOWN},
+};
+
+template<>
+const std::map<std::string, GameState::Player::Activity> GSIPacketParser::MapperTypeMap<GameState::Player::Activity>::mapper = {
+		{"playing",   GameState::Player::PLAYING},
+		{"menu",      GameState::Player::MENU},
+		{"textinput", GameState::Player::TEXT_INPUT},
+		{{},          GameState::Player::ACTIVITY_UNKNOWN}
 };

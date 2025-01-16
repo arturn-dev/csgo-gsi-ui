@@ -17,6 +17,7 @@ void assertBombInfo(const GameState::BombInfo& lhs, const GameState::BombInfo& r
 	ASSERT_EQ(lhs.bombState, rhs.bombState);
 	ASSERT_NO_FATAL_FAILURE(assertVec3(lhs.position, rhs.position));
 	ASSERT_EQ(lhs.countdown, rhs.countdown);
+	ASSERT_EQ(lhs.player, rhs.player);
 }
 
 void assertSideStats(const GameState::MapInfo::SideStats& lhs, const GameState::MapInfo::SideStats& rhs)
@@ -81,15 +82,17 @@ void assertPlayer(const GameState::Player& lhs, const GameState::Player& rhs)
 {
 	ASSERT_EQ(lhs.steamId, rhs.steamId);
 	ASSERT_EQ(lhs.name, rhs.name);
+	ASSERT_EQ(lhs.clan, rhs.clan);
 	ASSERT_EQ(lhs.observerSlot, rhs.observerSlot);
 	ASSERT_EQ(lhs.team, rhs.team);
+	ASSERT_EQ(lhs.activity, rhs.activity);
+	ASSERT_EQ(lhs.isSpectated, rhs.isSpectated);
 	ASSERT_NO_FATAL_FAILURE(assertPlayerRoundState(lhs.roundState, rhs.roundState));
 	ASSERT_NO_FATAL_FAILURE(assertMatchStats(lhs.matchStats, rhs.matchStats));
 	for (int i = 0; i < lhs.weapons.size(); ++i)
 	{
 		ASSERT_NO_FATAL_FAILURE(assertWeapon(lhs.weapons.at(i), rhs.weapons.at(i))) << "i was " + std::to_string(i);
 	}
-	ASSERT_EQ(lhs.specTarget, rhs.specTarget);
 	ASSERT_NO_FATAL_FAILURE(assertVec3(lhs.position, rhs.position));
 	ASSERT_NO_FATAL_FAILURE(assertVec3(lhs.forward, rhs.forward));
 }
@@ -125,13 +128,15 @@ void assertGameState(const GameState& lhs, const GameState& rhs)
 }
 
 GameState::Player
-createPlayer(const std::string& steamId, const std::string& name, int obsSlot, GameState::Side side,
+createPlayer(const std::string& steamId, const std::string& name, const std::string& clan, int obsSlot,
+			 GameState::Side side,
 			 GameState::Player::MatchStats matchStats, GameState::Vec3 pos, GameState::Vec3 fwd,
 			 GameState::Player::RoundState roundState, const std::vector<GameState::Weapon>& weapons)
 {
 	GameState::Player player;
 	player.steamId = steamId;
 	player.name = name;
+	player.clan = clan;
 	player.observerSlot = obsSlot;
 	player.team = side;
 	player.matchStats = matchStats;
@@ -181,7 +186,7 @@ TEST(GSIPacketParser, ShouldCorrectlyParsePlayers)
 {
 	GameState::PlayerList playerList;
 	playerList.push_back(createPlayer(
-			"0", "Player 0", 0, GameState::T_SIDE, {9, 0, 8, 0, 19},
+			"0", "Player 0", "", 0, GameState::T_SIDE, {9, 0, 8, 0, 19},
 			{807.02, 2491.80, 138.57},
 			{-0.93, 0.36, 0.05}, {100, 99, true, 0, -1, 0, 900, 0, 0, 0, 4100},
 			{
@@ -196,7 +201,7 @@ TEST(GSIPacketParser, ShouldCorrectlyParsePlayers)
 								 GameState::Weapon::HOLSTERED)
 			}));
 	playerList.push_back(createPlayer(
-			"1", "Player 1", 1, GameState::CT_SIDE, {8, 6, 4, 0, 22},
+			"1", "Player 1", "", 1, GameState::CT_SIDE, {8, 6, 4, 0, 22},
 			{2349.31, -349.82, 88.63},
 			{-0.63, 0.78, 0.05}, {73, 96, true, 0, -1, 0, 5350, 1, 1, 100, 5700},
 			{
@@ -209,8 +214,11 @@ TEST(GSIPacketParser, ShouldCorrectlyParsePlayers)
 					createGrenade("weapon_hegrenade", GameState::Weapon::HOLSTERED),
 					createGrenade("weapon_flashbang", GameState::Weapon::HOLSTERED),
 			}));
+	playerList.back().isSpectated = true;
+	playerList.back().activity = GameState::Player::PLAYING;
+
 	playerList.push_back(createPlayer(
-			"2", "Player 2", 2, GameState::CT_SIDE, {8, 0, 4, 2, 16},
+			"2", "Player 2", "Clan 2", 2, GameState::CT_SIDE, {8, 0, 4, 2, 16},
 			{1816.31, 1401.86, 160.03},
 			{-0.16, 0.99, -0.07}, {100, 94, true, 0, -1, 0, 7400, 0, 0, 0, 7850},
 			{
@@ -222,7 +230,7 @@ TEST(GSIPacketParser, ShouldCorrectlyParsePlayers)
 								 GameState::Weapon::HOLSTERED, 9, 10, 30)
 			}));
 	playerList.push_back(createPlayer(
-			"3", "Player 3", 3, GameState::CT_SIDE, {13, 1, 2, 3, 29},
+			"3", "Player 3", "Clan 3", 3, GameState::CT_SIDE, {13, 1, 2, 3, 29},
 			{473.85, 2574.22, 160.03},
 			{0.92, -0.39, -0.06}, {100, 100, true, 0, -1, 0, 5800, 1, 1, 66, 5700},
 			{
@@ -234,27 +242,27 @@ TEST(GSIPacketParser, ShouldCorrectlyParsePlayers)
 								 GameState::Weapon::ACTIVE, 24, 30, 90)
 			}));
 	playerList.push_back(createPlayer(
-			"4", "Player 4", 4, GameState::CT_SIDE, {11, 1, 6, 2, 23},
+			"4", "Player 4", "", 4, GameState::CT_SIDE, {11, 1, 6, 2, 23},
 			{1463.19, -96.67, 130.03},
 			{0.98, -0.20, -0.07}, {0, 0, false, 0, -1, 0, 2950, 1, 1, 100, 6200}, {}));
 	playerList.push_back(createPlayer(
-			"5", "Player 5", 5, GameState::CT_SIDE, {5, 2, 7, 1, 12},
+			"5", "Player 5", "", 5, GameState::CT_SIDE, {5, 2, 7, 1, 12},
 			{471.38, 2120.02, 135.12},
 			{0.96, -0.26, -0.07}, {0, 0, false, 0, -1, 0, 2700, 1, 0, 134, 5000}, {}));
 	playerList.push_back(createPlayer(
-			"6", "Player 6", 6, GameState::T_SIDE, {5, 3, 9, 1, 15},
+			"6", "Player 6", "Clan 1", 6, GameState::T_SIDE, {5, 3, 9, 1, 15},
 			{2014.46, 100.25, 132.93}, {-0.89, 0.45, 0.04},
 			{0, 0, false, 0, -1, 0, 550, 1, 1, 127, 3900}, {}));
 	playerList.push_back(createPlayer(
-			"7", "Player 7", 7, GameState::T_SIDE, {1, 0, 9, 0, 4},
+			"7", "Player 7", "", 7, GameState::T_SIDE, {1, 0, 9, 0, 4},
 			{1254.51, 328.01, 128.03},
 			{-0.89, 0.45, 0.04}, {0, 0, false, 0, -1, 0, 100, 0, 0, 0, 3900}, {}));
 	playerList.push_back(createPlayer(
-			"8", "Player 8", 8, GameState::T_SIDE, {2, 2, 10, 0, 6},
+			"8", "Player 8", "", 8, GameState::T_SIDE, {2, 2, 10, 0, 6},
 			{50.68, 874.80, 70.01},
 			{-0.89, 0.45, 0.04}, {0, 0, false, 0, -1, 0, 0, 0, 0, 51, 3600}, {}));
 	playerList.push_back(createPlayer(
-			"9", "Player 9", 9, GameState::T_SIDE, {6, 0, 9, 0, 12},
+			"9", "Player 9", "", 9, GameState::T_SIDE, {6, 0, 9, 0, 12},
 			{696.08, 2773.96, 132.77},
 			{0.44, -0.90, 0.02}, {0, 0, false, 255, -1, 0, 800, 1, 1, 49, 4600}, {}));
 

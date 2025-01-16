@@ -37,7 +37,8 @@ public:
 			RIFLE,
 			GRENADE,
 			C4,
-			SNIPER_RIFLE
+			SNIPER_RIFLE,
+			SUBMACHINE_GUN
 		} type = WEAPON_TYPE_UNKNOWN;
 
 		int ammoClip = -1;
@@ -61,8 +62,13 @@ public:
 	{
 		std::string steamId;
 		std::string name;
+		std::string clan;
 		unsigned int observerSlot = std::numeric_limits<unsigned int>::max();
 		Side team = SIDE_UNKNOWN;
+		std::vector<Weapon> weapons;
+		Vec3 position;
+		Vec3 forward;
+		bool isSpectated = false;
 
 		struct RoundState
 		{
@@ -88,13 +94,16 @@ public:
 			int score = std::numeric_limits<unsigned int>::min();
 		} matchStats;
 
-		std::vector<Weapon> weapons;
-		std::string specTarget; // Valid only for currently spectated player, otherwise empty
-		Vec3 position;
-		Vec3 forward;
+		enum Activity
+		{
+			ACTIVITY_UNKNOWN,
+			PLAYING,
+			MENU,
+			TEXT_INPUT
+		} activity; // Valid only for currently spectated player
 	};
 
-	typedef std::vector<GameState::Player> PlayerList;
+	typedef std::vector<GameState::Player> PlayerList; // TODO: change to static array?
 
 
 	struct MapInfo
@@ -102,7 +111,9 @@ public:
 		enum Mode
 		{
 			MAP_MODE_UNKNOWN,
-			COMPETITIVE
+			COMPETITIVE,
+			CASUAL,
+			DEATHMATCH
 		} mode = MAP_MODE_UNKNOWN;
 
 		enum MapPhase
@@ -166,6 +177,7 @@ public:
 		} bombState = BOMB_STATE_UNKNOWN;
 		Vec3 position;
 		double countdown = -1.0;
+		Player* player = nullptr; // player interacting with the bomb
 	};
 
 	struct RoundInfo
@@ -183,26 +195,27 @@ public:
 		Side winningSide = SIDE_UNKNOWN;
 	};
 
-	//enum Phase
-
 private:
 	Provider provider;
-	//const Player& currentPlayer; TODO: Is it really necessary? Maybe some other idea to indicate currently viewed player.
 	MapInfo mapInfo;
 	PlayerList players;
 	BombInfo bombInfo;
 	RoundInfo roundInfo;
-	// TODO: grenades?
+	// TODO: grenades
 
 public:
 	GameState() = default;
 
-	GameState(Provider provider, MapInfo mapInfo,
-			  PlayerList players, BombInfo bombInfo,
-			  RoundInfo roundInfo) : provider(std::move(provider)),
-									 mapInfo(std::move(mapInfo)),
-									 players(std::move(players)),
-									 bombInfo(bombInfo), roundInfo(roundInfo)
+	GameState(Provider provider,
+			  MapInfo mapInfo,
+			  PlayerList players,
+			  BombInfo bombInfo,
+			  RoundInfo roundInfo)
+			: provider(std::move(provider)),
+			  mapInfo(std::move(mapInfo)),
+			  players(std::move(players)),
+			  bombInfo(std::move(bombInfo)),
+			  roundInfo(std::move(roundInfo))
 	{}
 
 	const Provider& getProvider() const
